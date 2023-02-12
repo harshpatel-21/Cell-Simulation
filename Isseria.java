@@ -2,6 +2,8 @@ import java.awt.Color;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.stream.Stream;
 
 /**
  * @author Ishab Ahmed, Harshraj Patel
@@ -9,7 +11,6 @@ import java.util.stream.Collectors;
  */
 
 public class Isseria extends Cell {
-
     /**
      * Create a new Isseria.
      *
@@ -20,51 +21,68 @@ public class Isseria extends Cell {
         super(field, location, col);
     }
 
+    public Isseria(Field field, Location location) {
+        super(field, location, new Color(242,98,255));
+    }
+
     /**
      * This is how the Isseria decides if it's alive or not
      */
-    public void act() {
-        List<Cell> neighbours = getField().getLivingNeighbours(getLocation());
-        neighbours = neighbours.stream().filter(cell -> cell instanceof Isseria).collect(Collectors.toList());
+    public Cell act() {
+        Random rand = Randomizer.getRandom();
 
-        if (isAlive()) {
-           // live if there are 2 or 3 neighbours, otherwise die
-           if (neighbours.size() > 1 && neighbours.size() < 4) setNextState(true);
-           else setNextState(false);
-           
-           int row = getLocation().getRow();
-           int col = getLocation().getCol();
-           
-           // if both the row and column are odd
-           if (row % 2 != 0 && col % 2 != 0) {
-               // set the cell to the left alive
-               getField().getObjectAt(row, Math.max(col - 1, 0)).setNextState(true); // left 
-               //getField().getObjectAt(row, Math.min(col + 1, getField().getWidth() - 1)).setNextState(true); // right
-               //getField().getObjectAt(Math.max(row-1, 0), col).setNextState(true); // top
-               Random rand = Randomizer.getRandom();
-               
-               // pi% of the time the top right cell is set to alive
-               if (rand.nextDouble() <= 0.3141592) getField().getObjectAt(Math.max(row - 1, 0), Math.min(col + 1, getField().getWidth() - 1)).setNextState(true); // toprigh
-               
-               setNextState(false); // kill the current cell
-           }
-           
-           // the 3 cells below this current cell
-           Cell c1 = getField().getObjectAt(Math.min(row + 1, getField().getDepth() - 1), col);
-           Cell c2 = getField().getObjectAt(Math.min(row + 2, getField().getDepth() - 1), col);
-           Cell c3 = getField().getObjectAt(Math.min(row + 3, getField().getDepth() - 1), col);
-           
-           // cell to the left
-           Cell c4 = getField().getObjectAt(row, Math.max(col - 1, 0));
-           // cell to the right
-           Cell c5 = getField().getObjectAt(row, Math.min(col + 1, getField().getWidth() - 1));
-           
-           if (isAlive() && c1.isAlive() && c2.isAlive() && c3.isAlive() && ((c1 != c2) && (c2 != c3))) c1.setNextState(false); c2.setNextState(false); c3.setNextState(false);
-           if (isAlive() && c4.isAlive() && c5.isAlive()) setNextState(false);
+        List<Cell> livingNeighbours = getField().getLivingNeighbours(getLocation());
+        
+        // get all the living neighbours of the same species
+        List<Cell> sameNeighbours = livingNeighbours.stream().filter(cell -> cell.getClass().equals(this.getClass())).collect(Collectors.toList());
+        
+        // get all the neighbours, which were engulfed (meaning that they were previously Isseria cells)
+        List<Cell> engulfedNeighbours = livingNeighbours.stream().filter(cell -> cell.getEngulfed()).collect(Collectors.toList());
+        
+        // checks for engulfed neighbouring cells (previously isseria but now helicobacter)
+        // 50% chance of spawning Isseria from remnent DNA of engulfed Issera which are now Helis
+        if (engulfedNeighbours.size()==2 && !(isAlive()) && rand.nextDouble()<0.85){setNextState(true); return null;}
+
+        
+        else if(sameNeighbours.size()==2) {;} // do nothing
+        else if(sameNeighbours.size()==1) {setNextState(false);}
+        else if(sameNeighbours.size()==3) {setNextState(true);}
+        else if(sameNeighbours.size()>3) {setNextState(false);}
+        
+        return null;
+    }
+
+
+    public List<Cell[]> getEngulfedIfPossible() {
+        Random rand = Randomizer.getRandom();
+        
+        List<Cell[]> cellsToEngulf = new ArrayList<>();
+
+        // get number of living helicobacter cells
+        int heliNum = getField().getLivingNeighbours(this.getLocation()).stream().filter(cell -> cell instanceof Helicobacter).collect(Collectors.toList()).size();
+
+        // set the probability of engulfsion
+        double engulfProbability = 0.24;
+
+        // if the number chosen is greater than the probability, return (reduce indents)
+        if (rand.nextDouble()>engulfProbability){ return cellsToEngulf; }
+
+        // range of surrounding neighbours needed to engulf (inclusive)
+        int lowerBound = 1;
+        int upperBound = 3;
+        
+        // if the number of neighbours is within the range required to be engulfed, engulf the cell
+        if (heliNum >= lowerBound && heliNum <= upperBound && isAlive()) {
+            Helicobacter newHeliCell = new Helicobacter(getField(), this.getLocation());
+
+            newHeliCell.setNextState(true); 
+            newHeliCell.setEngulfed(); // 
+
+            getField().setObjectAt(this.getLocation(), newHeliCell);
+            cellsToEngulf.add(new Cell[]{this, newHeliCell});
         }
         
-        // if there are exactly 3 neighbours and the cell is dead, revive it
-        else if (neighbours.size() == 3) setNextState(true);
+        return cellsToEngulf;
     }
 }
 

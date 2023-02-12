@@ -25,20 +25,51 @@ public class Mycoplasma extends Cell {
         super(field, location, col);
     }
 
+    public Mycoplasma(Field field, Location location) {
+        super(field, location, Color.ORANGE);
+    }
+
+
     /**
      * This is how the Mycoplasma decides if it's alive or not
      */
-    public void act() {
-        List<Cell> neighbours = getField().getLivingNeighbours(getLocation());
-        neighbours = neighbours.stream().filter(cell -> cell instanceof Mycoplasma).collect(Collectors.toList());
+    public Cell act() {
+        Random rand = Randomizer.getRandom();
+
+        List<Cell> livingNeighbours = getField().getLivingNeighbours(getLocation());
+        
+        // get all the living neighbours of the same species
+        List<Cell> sameNeighbours = livingNeighbours.stream().filter(cell -> cell.getClass().equals(this.getClass())).collect(Collectors.toList());
 
         if (isAlive()) {
            // live if there are 2 or 3 neighbours, otherwise die
-           if (neighbours.size() > 1 && neighbours.size() < 4) setNextState(true);
+           if (sameNeighbours.size() > 1 && sameNeighbours.size() < 4) setNextState(true);
            else setNextState(false);
         }
         
         // if there are exactly 3 neighbours and the cell is dead, revive it
-        else if (neighbours.size() == 3) setNextState(true);
+        else if (sameNeighbours.size() == 3) setNextState(true);
+
+        return null;
     }
+
+    /**
+     * 
+     */
+    public Cell breedIfPossible(){
+        List<Cell> neighbours = getField().getLivingNeighbours(getLocation());
+
+        List<Cell> sameNeighbours = neighbours.stream().filter(cell -> cell instanceof Mycoplasma).collect(Collectors.toList());
+        List<Cell> isseNeighbours = neighbours.stream().filter(cell -> cell instanceof Isseria).collect(Collectors.toList());
+
+        if (sameNeighbours.size()>=1 && isseNeighbours.size()>=1){
+            Plebsiella offspring = new Plebsiella(getField(), getLocation());
+            offspring.setNextState(true);
+            return offspring;
+        }
+
+        else return null;
+
+    }
+
 }
