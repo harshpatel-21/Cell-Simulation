@@ -62,13 +62,25 @@ public class SimulatorView extends JFrame {
         fieldView = new FieldView(height, width);
 
         Container contents = getContentPane();
+        contents.setLayout(new BorderLayout());
 
         JPanel infoPane = new JPanel(new BorderLayout());
             infoPane.add(genLabel, BorderLayout.WEST);
             infoPane.add(infoLabel, BorderLayout.CENTER);
+
+        JPanel buttonPane = new JPanel(new BorderLayout());
+        
+        JButton toggleButton = new JButton("Toggle Simulation"); 
+        buttonPane.add(toggleButton, BorderLayout.SOUTH);
+        
+        JButton toggleButton2 = new JButton("Toggle Simulation");
+        buttonPane.add(toggleButton, BorderLayout.SOUTH);
+        
         contents.add(infoPane, BorderLayout.NORTH);
         contents.add(fieldView, BorderLayout.CENTER);
-        contents.add(population, BorderLayout.SOUTH);
+        contents.add(population, BorderLayout.PAGE_END);
+        contents.add(buttonPane, BorderLayout.PAGE_END);
+
         pack();
         setVisible(true);
     }

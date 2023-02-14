@@ -41,6 +41,12 @@ public class Isseria extends Cell {
         
         // checks for engulfed neighbouring cells (previously isseria but now helicobacter)
         // 50% chance of spawning Isseria from remnent DNA of engulfed Issera which are now Helis
+        
+        // check if it can get eaten
+        // Cell engulfedCell = getInfectedIfPossible(Helicobacter.class);
+        // Cell engulfedCell = getEngulfedIfPossible();
+        // if (engulfedCell != null) return engulfedCell;
+
         if (engulfedNeighbours.size()==2 && !(isAlive()) && rand.nextDouble()<0.85){setNextState(true); return null;}
 
         

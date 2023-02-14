@@ -11,10 +11,11 @@ import java.util.ArrayList;
  */
 
 public class Helicobacter extends Cell {
-    // private double r = 222;
-    // private double g = 255;
-    // private double b = 255;
+    private double r = 222;
+    private double g = 255;
+    private double b = 255;
 
+    private double plebInfectRate = 0.075;
     /**
      * Create a new Helicobacter.
      *
@@ -26,7 +27,7 @@ public class Helicobacter extends Cell {
     }
 
     public Helicobacter(Field field, Location location) {
-        super(field, location, Color.CYAN);
+        super(field, location, new Color(222, 255, 255));
     }
 
     /**
@@ -40,12 +41,12 @@ public class Helicobacter extends Cell {
 
         // TODO: create an attribute which stores the generation counter(how long a cell has been alive for, use to change probability and darkness of blue)
         // if (generation % 100 == 0) plebInfectionRate *= 0.95;
-        double plebProduceRate = 0.105;
+        // double plebProduceRate = 0.105;
         
 		List<Cell> infectedNeighbours = livingNeighbours.stream().filter(cell -> cell instanceof Plebsiella)
 				.collect(Collectors.toList());
 
-		double plebInfectRate = 0.0;
+		// double plebInfectRate = 0.05;
 
 		if (!(isAlive()) && infectedNeighbours.size() >= 1){
 			if (rand.nextDouble() < plebInfectRate){
@@ -55,14 +56,16 @@ public class Helicobacter extends Cell {
 			}
 		}
 
-        // if (isAlive()){
-        //     r = Math.max(r-2,52);
-        //     g = Math.max(r-2,126);
-        //     b = Math.max(r-2,255);
-        // }
+        if (isAlive()){
+            r = Math.max(r-2,52);
+            g = Math.max(r-2,126);
+            b = Math.max(r-2,255);
 
-        // Color color = new Color((int) r,(int) g,(int) b);
-        // setColor(color);
+            plebInfectRate *= 0.95;
+        }
+
+        Color color = new Color((int) r,(int) g,(int) b);
+        setColor(color);
 
         if (!isAlive() && sameNeighbours.size()==3){
             setNextState(true); 
