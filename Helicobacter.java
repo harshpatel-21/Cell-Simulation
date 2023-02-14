@@ -11,9 +11,9 @@ import java.util.ArrayList;
  */
 
 public class Helicobacter extends Cell {
-    private double r = 222;
-    private double g = 255;
-    private double b = 255;
+    // private double r = 222;
+    // private double g = 255;
+    // private double b = 255;
 
     /**
      * Create a new Helicobacter.
@@ -26,7 +26,7 @@ public class Helicobacter extends Cell {
     }
 
     public Helicobacter(Field field, Location location) {
-        super(field, location, new Color(222,255,255));
+        super(field, location, Color.CYAN);
     }
 
     /**
@@ -55,21 +55,21 @@ public class Helicobacter extends Cell {
 			}
 		}
 
-        if (isAlive()){
-            r = Math.max(r-2,52);
-            g = Math.max(r-2,126);
-            b = Math.max(r-2,255);
-        }
+        // if (isAlive()){
+        //     r = Math.max(r-2,52);
+        //     g = Math.max(r-2,126);
+        //     b = Math.max(r-2,255);
+        // }
 
-        Color color = new Color((int) r,(int) g,(int) b);
-        setColor(color);
+        // Color color = new Color((int) r,(int) g,(int) b);
+        // setColor(color);
 
         if (!isAlive() && sameNeighbours.size()==3){
             setNextState(true); 
             return null;
         }
 
-        if(sameNeighbours.size()==2) {int x = 4;} // do nothing
+        if(sameNeighbours.size()==2) {} // do nothing
         else if(sameNeighbours.size()==1) {setNextState(false);}
         else if(sameNeighbours.size()==3) {setNextState(true);}
         else if(sameNeighbours.size()>3) {setNextState(false);}
