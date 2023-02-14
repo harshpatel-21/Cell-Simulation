@@ -49,7 +49,15 @@ public class SimulatorView extends JFrame {
         infoLabel = new JLabel("  ", JLabel.CENTER);
         population = new JLabel(POPULATION_PREFIX, JLabel.CENTER);
 
-        setLocation(100, 50);
+        Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
+        
+        // width will store the width of the screen
+        int screen_width = (int)size.getWidth();
+        
+        // height will store the height of the screen
+        int screen_height = (int)size.getHeight();
+
+        setLocation((int) (screen_width*0.5 - (width*3)), (int) (screen_height*0.5 - (height*3)));
 
         fieldView = new FieldView(height, width);
 
