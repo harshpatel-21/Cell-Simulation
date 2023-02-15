@@ -13,7 +13,7 @@ import java.util.Map;
  * @version 2022.01.06 (1)
  */
 
-public class SimulatorView extends JFrame {
+public class SimulatorView extends JFrame implements ActionListener{
     // Colors used for empty locations.
     private static final Color EMPTY_COLOR = Color.white;
 
@@ -36,6 +36,16 @@ public class SimulatorView extends JFrame {
     // A statistics object computing and storing simulation information
     private FieldStats stats;
 
+    JComboBox<String> speedBox;
+    JButton pauseButton;
+    JButton resetButton;
+    JPanel bottomPane;
+
+    boolean paused = true;
+    boolean reset = false;
+    double speedMultiplier;
+
+
     /**
      * Create a view of the given width and height.
      * @param height The simulation's height.
@@ -57,20 +67,131 @@ public class SimulatorView extends JFrame {
         // height will store the height of the screen
         int screen_height = (int)size.getHeight();
 
+        // center the window to the center of the screen
         setLocation((int) (screen_width*0.5 - (width*3)), (int) (screen_height*0.5 - (height*3)));
 
         fieldView = new FieldView(height, width);
 
         Container contents = getContentPane();
+        // create the panel that is to go at the bottom
+        createBottomPanel();
 
         JPanel infoPane = new JPanel(new BorderLayout());
-            infoPane.add(genLabel, BorderLayout.WEST);
-            infoPane.add(infoLabel, BorderLayout.CENTER);
-        contents.add(infoPane, BorderLayout.NORTH);
-        contents.add(fieldView, BorderLayout.CENTER);
-        contents.add(population, BorderLayout.SOUTH);
+
+        infoPane.add(genLabel, BorderLayout.WEST);
+        infoPane.add(infoLabel, BorderLayout.CENTER);
+
+        contents.setLayout(new GridBagLayout());
+
+        GridBagConstraints c = new GridBagConstraints();
+
+        c.gridx=0;
+        c.gridy=0;
+        contents.add(infoPane, c);
+        c.gridx=0;
+        c.gridy=1;
+        contents.add(fieldView, c);
+        c.gridx=0;
+        c.gridy=2;
+        contents.add(population,c);
+        c.gridx=0;
+        c.gridy=3;
+        contents.add(bottomPane, c);
+        System.out.println(pauseButton.getHeight()+" "+pauseButton.getWidth());
+
         pack();
         setVisible(true);
+    }
+
+    public void actionPerformed(ActionEvent e){
+        if (e.getSource() == pauseButton){
+            paused = !paused;
+            if (paused) {
+                pauseButton.setText("Resume");
+            }
+            else {
+                pauseButton.setText("Pause");
+            };
+        }
+        else if (e.getSource() == resetButton){
+            reset=!reset;
+        }
+        else if (e.getSource() == speedBox){
+            speedMultiplier = (double) Double.parseDouble(speedBox.getSelectedItem().toString());
+        }
+    } 
+
+    public boolean getPause(){
+        return paused;
+    }
+
+    public boolean getReset(){
+        return reset;
+    }
+
+    public double getSpeed(){
+        return speedMultiplier;
+    }
+
+    public void resetState(){
+        createBottomPanel();
+    }
+
+    /**
+     * creates the Bottom Panel along with the default values for it. Called when its created and when reeset.
+     */
+    public void createBottomPanel(){
+        // default values for the fields
+        speedMultiplier = 1;
+        reset = false;
+        paused = true;
+
+        // the outer panel which will store our buttons
+        bottomPane = new JPanel();
+        bottomPane.setLayout(new GridBagLayout()); // using the GridBagLayout
+
+        // create all the buttons and the speed selection box
+        String[] speedMultipliers = {"0.1","0.5","1","10","100","1000"};
+        speedBox = new JComboBox<String>(speedMultipliers);
+        pauseButton = new JButton("Start");
+        resetButton = new JButton("Reset");
+
+        // create an innter panel to group Speed label Text and the Speed Selection box
+        JPanel speedPanel = new JPanel(new GridBagLayout());
+        JLabel speedLabel = new JLabel("Speed Multiplier: ",JLabel.CENTER);
+        GridBagConstraints speedConstraints = new GridBagConstraints();
+        
+        // create the constraints object used to position the buttons on the grid
+        GridBagConstraints gridConstraints = new GridBagConstraints();
+        gridConstraints.fill = GridBagConstraints.NONE;
+        gridConstraints.insets = new Insets(13,0,0,0); // add 13px of vertical padding
+
+        // add the speed panel (includes text and box) to column 1
+        gridConstraints.gridx = 1;
+        speedConstraints.gridx = 0;
+        speedConstraints.gridy = 0;
+        speedPanel.add(speedLabel,speedConstraints);
+        
+        speedConstraints.gridx = 1;
+        speedConstraints.gridy = 0;
+        speedPanel.add(speedBox,speedConstraints);
+
+        speedBox.setSelectedIndex(2); // default speed is at index 1, which is the multiplier 1
+        bottomPane.add(speedPanel, gridConstraints);
+
+        // add the Start button in column 2
+        gridConstraints.gridx = 2;
+        pauseButton.setText("Start");
+        bottomPane.add(pauseButton, gridConstraints);
+
+        // add the Reset button in column 3
+        gridConstraints.gridx = 3;
+        bottomPane.add(resetButton, gridConstraints);
+
+        // add action listerners for when the buttons are clicked
+        pauseButton.addActionListener(this);
+        resetButton.addActionListener(this);
+        speedBox.addActionListener(this);
     }
 
     /**
@@ -109,7 +230,7 @@ public class SimulatorView extends JFrame {
       }
 
       stats.countFinished();
-      population.setText(POPULATION_PREFIX + stats.getPopulationDetails(field));
+      population.setText(POPULATION_PREFIX + "  "+stats.getPopulationDetails(field));
       fieldView.repaint();
     }
 

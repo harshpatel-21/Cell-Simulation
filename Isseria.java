@@ -63,6 +63,7 @@ public class Isseria extends Cell {
         Random rand = Randomizer.getRandom();
         
         List<Cell[]> cellsToEngulf = new ArrayList<>();
+        if (1==1){return cellsToEngulf;}
 
         // get number of living helicobacter cells
         int heliNum = getField().getLivingNeighbours(this.getLocation()).stream().filter(cell -> cell instanceof Helicobacter).collect(Collectors.toList()).size();

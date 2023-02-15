@@ -57,12 +57,13 @@ public class Mycoplasma extends Cell {
      * 
      */
     public Cell breedIfPossible(){
+        Random rand = new Random();
         List<Cell> neighbours = getField().getLivingNeighbours(getLocation());
 
         List<Cell> sameNeighbours = neighbours.stream().filter(cell -> cell instanceof Mycoplasma).collect(Collectors.toList());
         List<Cell> isseNeighbours = neighbours.stream().filter(cell -> cell instanceof Isseria).collect(Collectors.toList());
 
-        if (sameNeighbours.size()>=1 && isseNeighbours.size()>=1){
+        if (sameNeighbours.size()>=1 && isseNeighbours.size()>=1 && rand.nextDouble()<0.2){
             Plebsiella offspring = new Plebsiella(getField(), getLocation());
             offspring.setNextState(true);
             return offspring;

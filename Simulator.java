@@ -20,7 +20,7 @@ public class Simulator {
     private static final int DEFAULT_DEPTH = 110;
 
     // The probability that a Mycoplasma is alive
-    private static final double MYCOPLASMA_ALIVE_PROB = 0.4;
+    private static final double MYCOPLASMA_ALIVE_PROB = 0.2;
     
     // The probability that a Mycoplasma is alive
     private static final double HELICOBACTER_ALIVE_PROB = 0.2;
@@ -93,9 +93,20 @@ public class Simulator {
      * @param numGenerations The number of generations to run for.
      */
     public void simulate(int numGenerations) {
-        for (int gen = 1; gen <= numGenerations && view.isViable(field); gen++) {
-            simOneGeneration();
-            delay(20);
+        int gen = 1;
+        while (gen <= numGenerations && view.isViable(field)){
+            
+            if (!view.getPause()){
+                simOneGeneration();
+                gen++;
+            }
+
+            if(view.getReset()){
+                reset();
+                view.resetState();
+            }
+            delay((int) (30/view.getSpeed()));
+            
         }
     }
 
