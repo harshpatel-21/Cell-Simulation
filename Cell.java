@@ -54,7 +54,7 @@ public abstract class Cell {
 	 * Make this cell act - that is: the cell decides it's status in the
 	 * next generation.
 	 */
-	abstract public Cell act();
+	abstract public Cell act(int generation);
 
 	protected List<Cell[]> getEngulfedIfPossible() {
 		return new ArrayList<>();

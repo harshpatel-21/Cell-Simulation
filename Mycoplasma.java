@@ -33,7 +33,7 @@ public class Mycoplasma extends Cell {
     /**
      * This is how the Mycoplasma decides if it's alive or not
      */
-    public Cell act() {
+    public Cell act(int generation) {
         Random rand = Randomizer.getRandom();
 
         List<Cell> livingNeighbours = getField().getLivingNeighbours(getLocation());

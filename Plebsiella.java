@@ -29,7 +29,7 @@ public class Plebsiella extends Cell {
     /**
      * This is how the Plebsiella decides if it's alive or not
      */
-    public Cell act() {
+    public Cell act(int generation) {
         Random rand = new Random();
         List<Cell> livingNeighbours = getField().getLivingNeighbours(getLocation());
         List<Cell> sameNeighbours = livingNeighbours.stream().filter(cell -> cell instanceof Plebsiella).collect(Collectors.toList());

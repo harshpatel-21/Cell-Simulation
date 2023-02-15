@@ -33,7 +33,7 @@ public class Helicobacter extends Cell {
     /**
      * This is how the Helicobacter decides if it's alive or not
      */
-    public Cell act() {
+    public Cell act(int generation) {
         Random rand = Randomizer.getRandom();
 
         List<Cell> livingNeighbours = getField().getLivingNeighbours(getLocation());
@@ -57,9 +57,9 @@ public class Helicobacter extends Cell {
 		}
 
         if (isAlive()){
-            r = Math.max(r-2,52);
-            g = Math.max(r-2,126);
-            b = Math.max(r-2,255);
+            r = Math.max(200-(0.5*generation),52);
+            g = Math.max(255-(0.5*generation),126);
+            b = Math.max(222-(0.5*generation),255);
 
             plebInfectRate *= 0.95;
         }

@@ -109,7 +109,7 @@ public class Simulator {
         
         for (Iterator<Cell> it = cells.iterator(); it.hasNext(); ) {
             Cell cell = it.next();
-            Cell newCell = cell.act();  // TODO: pass generation, change behaviour based on generation (probability)
+            Cell newCell = cell.act(generation);  // TODO: pass generation, change behaviour based on generation (probability)
             
             // if the dead cell was replaced with offspring,
             if (newCell!=null) {cellsToReplace.add(new Cell[]{cell, newCell});}

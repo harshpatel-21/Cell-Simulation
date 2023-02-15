@@ -28,7 +28,7 @@ public class Isseria extends Cell {
     /**
      * This is how the Isseria decides if it's alive or not
      */
-    public Cell act() {
+    public Cell act(int generation) {
         Random rand = Randomizer.getRandom();
 
         List<Cell> livingNeighbours = getField().getLivingNeighbours(getLocation());
