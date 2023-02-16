@@ -1,21 +1,17 @@
 import java.awt.Color;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Random;
 import java.util.stream.Collectors;
 
 /**
  * A class representing the shared characteristics of all forms of life
  *
- * @author David J. Barnes, Michael Kölling & Jeffery Raphael
+ * @author David J. Barnes, Michael Kölling & Jeffery Raphael extended by
+ *         Harshraj Patel & Ishab Ahmed
  * @version 2022.01.06 (1)
  */
 
 public abstract class Cell {
-	private int generationCreated;
-	// Whether the cell was engulfed or not
-	private boolean engulfed;
-
 	// Whether the cell is alive or not.
 	private boolean alive;
 
@@ -25,11 +21,16 @@ public abstract class Cell {
 	// The cell's field.
 	private Field field;
 
-	// The cell's position in the field.
+	// The cell's position in the field.x
 	private Location location;
 
 	// The cell's color
 	private Color color = Color.white;
+
+	protected Color heliColour = Color.CYAN;
+	protected Color mycoColour = Color.ORANGE;
+	protected Color isseColour = Color.MAGENTA;
+	protected Color infectedColour = Color.RED;
 
 	/**
 	 * Create a new cell at location in field.
@@ -46,45 +47,99 @@ public abstract class Cell {
 		setColor(col);
 	}
 
-	public int getGenerationCreated() {
-		return generationCreated;
-	}
-
 	/**
 	 * Make this cell act - that is: the cell decides it's status in the
 	 * next generation.
 	 */
-	abstract public Cell act(int generation);
+	abstract public void act(int generation);
 
-	protected List<Cell[]> getEngulfedIfPossible() {
-		return new ArrayList<>();
-	}
+	/**
+	 * Cell is engulfed by an infected cell is dead and within the probability.
+	 * Cell is engulfed by a Helicobacter if matching the rules.
+	 */
+	protected void getEngulfedIfPossible() {
+		Random rand = Randomizer.getRandom();
 
-	protected Cell breedIfPossible() {
-		return null;
-	}
+		// if the cell is not alive
+		if (!(isAlive())) {
+			// get the number of infected neighbours
+			int infectedNum = getLivingNeighboursByColour(infectedColour).size();
 
-	protected Cell getInfectedIfPossible() {
-		Random rand = new Random();
-
-		List<Cell> livingNeighbours = getField().getLivingNeighbours(getLocation());
-
-		List<Cell> infectedNeighbours = livingNeighbours.stream().filter(cell -> cell instanceof Plebsiella)
-				.collect(Collectors.toList());
-
-		double plebInfectRate = 0.1025;
-
-		if (this instanceof Plebsiella){return null;}
-
-		if (infectedNeighbours.size() >= 1){
-			if (rand.nextDouble() < plebInfectRate){
-				Cell cell = new Plebsiella(getField(), getLocation());
-				cell.setNextState(true);
-				return cell;
+			// if there are more than 3 infected neighbours,
+			// there is a probability for that cell to become infected
+			if (infectedNum > 3 && rand.nextDouble() < 0.11) {
+				setColor(infectedColour);
+				setNextState(true);
 			}
 		}
 
-		return null;
+		// if the cell is not a Helicobacter
+		if (!(getColor().equals(heliColour))) {
+			// get number of helicobacter neighbours
+			int heliNum = getLivingNeighboursByColour(heliColour).size();
+
+			double engulfProbability = 0.6;
+
+			if (rand.nextDouble() < engulfProbability) {
+				// if cell is surrounded by between 1 and 3 Helicobacters
+				if (heliNum >= 1 && heliNum <= 3) {
+					// there is a probability that the cell is turned in to a Helicobacter
+					if (rand.nextDouble() < 0.15) {
+						setColor(heliColour);
+						setNextState(true);
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Changes the cell becomes a different cell when two different, neighbouring
+	 * cells collide
+	 */
+	protected void breedIfPossible() {};
+
+	// protected boolean isHeli() {
+	// return getColor() != mycoColour && getColor() != isseColour && getColor() !=
+	// infectedColour;
+	// }
+
+	/**
+	 * Infects the cell if it is surrounded by infected cells and is within the
+	 * probability
+	 */
+	protected void getInfectedIfPossible() {
+		Random rand = new Random();
+
+		// get all the infected neighbours
+		List<Cell> infectedNeighbours = getLivingNeighboursByColour(infectedColour);
+
+		// probability of infecting this cell
+		double infectRate = 0.1025;
+
+		// if the cell is not infected
+		if (!getColor().equals(infectedColour)) {
+			// if the cell is surrounded by more than one infected neighbour
+			if (infectedNeighbours.size() >= 1) {
+				// there is a chance that the cell is infected
+				if (rand.nextDouble() < infectRate) {
+					setColor(infectedColour);
+					setNextState(true);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Gets all of the living neighbours of the cell and filters it by the colour
+	 * passed in
+	 * 
+	 * @param colour The colour of the neighbours to be retrieved
+	 * @return A list of neighbouring cells of the same colour as the parameter
+	 */
+	protected List<Cell> getLivingNeighboursByColour(Color colour) {
+		return getField().getLivingNeighbours(getLocation()).stream().filter(cell -> cell.getColor().equals(colour))
+				.collect(Collectors.toList());
 	}
 
 	/**
@@ -101,14 +156,6 @@ public abstract class Cell {
 	 */
 	protected void setDead() {
 		alive = false;
-	}
-
-	protected void setEngulfed() {
-		engulfed = true;
-	}
-
-	protected boolean getEngulfed() {
-		return engulfed;
 	}
 
 	/**
@@ -172,79 +219,5 @@ public abstract class Cell {
 	 */
 	protected Field getField() {
 		return field;
-	}
-
-	protected Cell getTopNeighbour() {
-		int[] coords = getTopNeighbourLocation();
-		return field.getObjectAt(coords[0], coords[1]);
-	}
-
-	protected Cell getBottomNeighbour() {
-		int[] coords = getBottomNeighbourLocation();
-		return field.getObjectAt(coords[0], coords[1]);
-	}
-
-	protected Cell getLeftNeighbour() {
-		int[] coords = getLeftNeighbourLocation();
-		return field.getObjectAt(coords[0], coords[1]);
-	}
-
-	protected Cell getRightNeighbour() {
-		int[] coords = getRightNeighbourLocation();
-		return field.getObjectAt(coords[0], coords[1]);
-	}
-
-	protected Cell getTopLeftNeighbour() {
-		int[] coords = getTopLeftNeighbourLocation();
-		return field.getObjectAt(coords[0], coords[1]);
-	}
-
-	protected Cell getTopRightNeighbour() {
-		int[] coords = getTopRightNeighbourLocation();
-		return field.getObjectAt(coords[0], coords[1]);
-	}
-
-	protected Cell getBottomLeftNeighbour() {
-		int[] coords = getBottomLeftNeighbourLocation();
-		return field.getObjectAt(coords[0], coords[1]);
-	}
-
-	protected Cell getBottomRightNeighbour() {
-		int[] coords = getBottomRightNeighbourLocation();
-		return field.getObjectAt(coords[0], coords[1]);
-	}
-
-	protected int[] getTopNeighbourLocation() {
-		return new int[] { Math.max(0, location.getRow() - 1), location.getCol() };
-	}
-
-	protected int[] getBottomNeighbourLocation() {
-		return new int[] { Math.min(location.getRow() + 1, field.getDepth() - 1), location.getCol() };
-	}
-
-	protected int[] getLeftNeighbourLocation() {
-		return new int[] { location.getRow(), Math.max(location.getCol() - 1, 0) };
-	}
-
-	protected int[] getRightNeighbourLocation() {
-		return new int[] { location.getRow(), Math.min(location.getCol() + 1, field.getWidth() - 1) };
-	}
-
-	protected int[] getTopLeftNeighbourLocation() {
-		return new int[] { Math.max(location.getRow() - 1, 0), Math.max(location.getCol() - 1, 0) };
-	}
-
-	protected int[] getTopRightNeighbourLocation() {
-		return new int[] { Math.max(location.getRow() - 1, 0),Math.min(location.getCol() + 1, getField().getWidth() - 1) };
-	}
-
-	protected int[] getBottomLeftNeighbourLocation() {
-		return new int[] { Math.min(location.getRow() + 1, getField().getDepth() - 1),
-				Math.max(location.getCol() - 1, 0) };
-	}
-
-	protected int[] getBottomRightNeighbourLocation() {
-		return new int[] { Math.min(location.getRow() + 1, getField().getDepth() - 1),
-				Math.min(location.getCol() + 1, getField().getWidth() - 1) };
 	}
 }

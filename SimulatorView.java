@@ -97,7 +97,6 @@ public class SimulatorView extends JFrame implements ActionListener{
         c.gridx=0;
         c.gridy=3;
         contents.add(bottomPane, c);
-        System.out.println(pauseButton.getHeight()+" "+pauseButton.getWidth());
 
         pack();
         setVisible(true);

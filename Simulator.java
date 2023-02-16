@@ -21,10 +21,10 @@ public class Simulator {
 
     // The probability that a Mycoplasma is alive
     private static final double MYCOPLASMA_ALIVE_PROB = 0.2;
-    
+
     // The probability that a Mycoplasma is alive
     private static final double HELICOBACTER_ALIVE_PROB = 0.2;
-    
+
     // The probability that a Mycoplasma is alive
     private static final double ISSERIA_ALIVE_PROB = 0.15;
 
@@ -44,8 +44,8 @@ public class Simulator {
      * Execute simulation
      */
     public static void main(String arg1) {
-      Simulator sim = new Simulator();
-      sim.simulate(100);
+        Simulator sim = new Simulator();
+        sim.simulate(100);
     }
 
     /**
@@ -57,6 +57,7 @@ public class Simulator {
 
     /**
      * Create a simulation field with the given size.
+     * 
      * @param depth Depth of the field. Must be greater than zero.
      * @param width Width of the field. Must be greater than zero.
      */
@@ -88,25 +89,25 @@ public class Simulator {
 
     /**
      * Run the simulation from its current state for the given number of
-     * generations.  Stop before the given number of generations if the
+     * generations. Stop before the given number of generations if the
      * simulation ceases to be viable.
+     * 
      * @param numGenerations The number of generations to run for.
      */
     public void simulate(int numGenerations) {
-        int gen = 1;
-        while (gen <= numGenerations && view.isViable(field)){
-            
-            if (!view.getPause()){
+        while (true && view.isViable(field)) {
+
+            if (!view.getPause() && generation <= numGenerations) {
                 simOneGeneration();
-                gen++;
+                generation++;
             }
 
-            if(view.getReset()){
+            if (view.getReset()) {
                 reset();
                 view.resetState();
             }
-            delay((int) (30/view.getSpeed()));
-            
+            delay((int) (30 / view.getSpeed()));
+
         }
     }
 
@@ -116,41 +117,23 @@ public class Simulator {
      */
     public void simOneGeneration() {
         generation++;
-        List<Cell[]> cellsToReplace = new ArrayList<>();
-        
-        for (Iterator<Cell> it = cells.iterator(); it.hasNext(); ) {
+
+        for (Iterator<Cell> it = cells.iterator(); it.hasNext();) {
             Cell cell = it.next();
-            Cell newCell = cell.act(generation);  // TODO: pass generation, change behaviour based on generation (probability)
-            
-            // if the dead cell was replaced with offspring,
-            if (newCell!=null) {cellsToReplace.add(new Cell[]{cell, newCell});}
+            cell.act(generation);
 
-             // if the dead cell wasn't replaced with offspring,
-            else {
-                Cell offspringCell = cell.breedIfPossible();
-                if (offspringCell != null) cellsToReplace.add(new Cell[]{cell, offspringCell});
-                
-                Cell infectedCell = cell.getInfectedIfPossible();
-                if (infectedCell != null) cellsToReplace.add(new Cell[]{cell, infectedCell});
-            }
-            //cell.engulfIfPossible().stream().map(cellToEngulf -> cellsToReplace.add(cellToEngulf));
-            
-            for (Cell[] c : cell.getEngulfedIfPossible()) {
-                cellsToReplace.add(c);
+            if (cell.getColor() != Color.RED) {
+                cell.breedIfPossible();
+                cell.getInfectedIfPossible();
             }
 
-        }
-        
-        for (Cell[] cell : cellsToReplace) {
-            cells.remove(cell[0]);
-            cells.add(cell[1]);
-            field.setObjectAt(cell[0].getLocation(), cell[1]);
+            cell.getEngulfedIfPossible();
         }
 
         for (Cell cell : cells) {
-          cell.updateState();
+            cell.updateState();
         }
-        
+
         view.showStatus(generation, field);
     }
 
@@ -170,7 +153,7 @@ public class Simulator {
      * Randomly populate the field live/dead life forms
      */
     private void populate() {
-        Random rand = Randomizer.getRandom();
+        // Random rand = Randomizer.getRandom();
         field.clear();
         for (int row = 0; row < field.getDepth(); row++) {
             for (int col = 0; col < field.getWidth(); col++) {
@@ -179,45 +162,45 @@ public class Simulator {
             }
         }
     }
-    
+
     private void populateSingleLocation(Location location) {
         Random rand = Randomizer.getRandom();
         int row = location.getRow();
         int col = location.getCol();
-        
-        
-        if (rand.nextDouble() <= MYCOPLASMA_ALIVE_PROB && row > DEFAULT_DEPTH/2) {
+
+        if (rand.nextDouble() <= MYCOPLASMA_ALIVE_PROB && row > DEFAULT_DEPTH / 2) {
             Mycoplasma myco = new Mycoplasma(field, location);
             cells.add(myco);
-        }
-        else if (rand.nextDouble() <= HELICOBACTER_ALIVE_PROB && col >= DEFAULT_WIDTH/2 && row <= DEFAULT_DEPTH/2) {
+        } else if (rand.nextDouble() <= HELICOBACTER_ALIVE_PROB && col >= DEFAULT_WIDTH / 2
+                && row <= DEFAULT_DEPTH / 2) {
             Helicobacter heli = new Helicobacter(field, location);
             cells.add(heli);
-        }
-        else if (rand.nextDouble() <= ISSERIA_ALIVE_PROB && col <= DEFAULT_WIDTH/2 && row <= DEFAULT_DEPTH/2) {
+        } else if (rand.nextDouble() <= ISSERIA_ALIVE_PROB && col <= DEFAULT_WIDTH / 2 && row <= DEFAULT_DEPTH / 2) {
             Isseria isse = new Isseria(field, location);
             cells.add(isse);
-        }
-        else createDeadCell(location);
+        } else
+            createDeadCell(location);
     }
-    
+
     private void createDeadCell(Location location) {
         Random rand = Randomizer.getRandom();
-        
+
         int row = location.getRow();
         int col = location.getCol();
 
-        // col >= DEFAULT_WIDTH/4 - 0.2*DEFAULT_WIDTH/4 && col <= DEFAULT_WIDTH/4 + 0.2*DEFAULT_WIDTH/4 
-        // if (col <= DEFAULT_WIDTH/2 && row >= DEFAULT_DEPTH/2 - 0.05*DEFAULT_WIDTH/4 && row <= DEFAULT_DEPTH/2 + 0.05*DEFAULT_WIDTH/4) {
-        //     Plebsiella pleb = new Plebsiella(field, location, Color.GREEN);
-        //     pleb.setDead();
-        //     cells.add(pleb);
+        // col >= DEFAULT_WIDTH/4 - 0.2*DEFAULT_WIDTH/4 && col <= DEFAULT_WIDTH/4 +
+        // 0.2*DEFAULT_WIDTH/4
+        // if (col <= DEFAULT_WIDTH/2 && row >= DEFAULT_DEPTH/2 - 0.05*DEFAULT_WIDTH/4
+        // && row <= DEFAULT_DEPTH/2 + 0.05*DEFAULT_WIDTH/4) {
+        // Plebsiella pleb = new Plebsiella(field, location, Color.GREEN);
+        // pleb.setDead();
+        // cells.add(pleb);
         // }
-        if (col <= DEFAULT_WIDTH/2 && row <= DEFAULT_DEPTH/2) {
+        if (col <= DEFAULT_WIDTH / 2 && row <= DEFAULT_DEPTH / 2) {
             Isseria isse = new Isseria(field, location);
             isse.setDead();
             cells.add(isse);
-        } else if (col >= DEFAULT_WIDTH/2 && row <= DEFAULT_DEPTH/2) {
+        } else if (col >= DEFAULT_WIDTH / 2 && row <= DEFAULT_DEPTH / 2) {
             Helicobacter heli = new Helicobacter(field, location);
             heli.setDead();
             cells.add(heli);
@@ -230,13 +213,13 @@ public class Simulator {
 
     /**
      * Pause for a given time.
-     * @param millisec  The time to pause for, in milliseconds
+     * 
+     * @param millisec The time to pause for, in milliseconds
      */
     private void delay(int millisec) {
         try {
             Thread.sleep(millisec);
-        }
-        catch (InterruptedException ie) {
+        } catch (InterruptedException ie) {
             // wake up
         }
     }
