@@ -28,6 +28,11 @@ public class Helicobacter extends Cell {
         // get all the living neighbours of the same colour
         List<Cell> sameNeighbours = getLivingNeighboursByColour(getColor());
 
+        if (generation % 50 == 0) {
+            System.out.println("y");
+            setColor(getColor().darker());
+        }
+
         // if the cell is dead, and has exactly 3 neighbours, dead cell is set alive
         if (!isAlive() && sameNeighbours.size() == 3) {
             setNextState(true);

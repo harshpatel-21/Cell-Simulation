@@ -39,14 +39,14 @@ public class Mycoplasma extends Cell {
         Random rand = Randomizer.getRandom();
 
         if (isAlive()) {
-            // live if there are 2 or 3 neighbours, otherwise die
+            // live on if there are 2 or 3 neighbours
             if (sameNeighbours.size() > 1 && sameNeighbours.size() < 4)
                 setNextState(true);
             else {
                 // if the cell is infected, there is a probability that is set alive
                 if (getColor().equals(infectedColour) && rand.nextDouble() < Math.max(10 / generation, 0.08)) {
                     setNextState(true);
-                    // otherwise cell dies
+                // otherwise cell dies
                 } else
                     setNextState(false);
             }

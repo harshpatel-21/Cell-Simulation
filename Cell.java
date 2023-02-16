@@ -54,95 +54,6 @@ public abstract class Cell {
 	abstract public void act(int generation);
 
 	/**
-	 * Cell is engulfed by an infected cell is dead and within the probability.
-	 * Cell is engulfed by a Helicobacter if matching the rules.
-	 */
-	protected void getEngulfedIfPossible() {
-		Random rand = Randomizer.getRandom();
-
-		// if the cell is not alive
-		if (!(isAlive())) {
-			// get the number of infected neighbours
-			int infectedNum = getLivingNeighboursByColour(infectedColour).size();
-
-			// if there are more than 3 infected neighbours,
-			// there is a probability for that cell to become infected
-			if (infectedNum > 3 && rand.nextDouble() < 0.11) {
-				setColor(infectedColour);
-				setNextState(true);
-			}
-		}
-
-		// if the cell is not a Helicobacter
-		if (!(getColor().equals(heliColour))) {
-			// get number of helicobacter neighbours
-			int heliNum = getLivingNeighboursByColour(heliColour).size();
-
-			double engulfProbability = 0.6;
-
-			if (rand.nextDouble() < engulfProbability) {
-				// if cell is surrounded by between 1 and 3 Helicobacters
-				if (heliNum >= 1 && heliNum <= 3) {
-					// there is a probability that the cell is turned in to a Helicobacter
-					if (rand.nextDouble() < 0.15) {
-						setColor(heliColour);
-						setNextState(true);
-					}
-				}
-			}
-		}
-	}
-
-	/**
-	 * Changes the cell becomes a different cell when two different, neighbouring
-	 * cells collide
-	 */
-	protected void breedIfPossible() {};
-
-	// protected boolean isHeli() {
-	// return getColor() != mycoColour && getColor() != isseColour && getColor() !=
-	// infectedColour;
-	// }
-
-	/**
-	 * Infects the cell if it is surrounded by infected cells and is within the
-	 * probability
-	 */
-	protected void getInfectedIfPossible() {
-		Random rand = new Random();
-
-		// get all the infected neighbours
-		List<Cell> infectedNeighbours = getLivingNeighboursByColour(infectedColour);
-
-		// probability of infecting this cell
-		double infectRate = 0.1025;
-
-		// if the cell is not infected
-		if (!getColor().equals(infectedColour)) {
-			// if the cell is surrounded by more than one infected neighbour
-			if (infectedNeighbours.size() >= 1) {
-				// there is a chance that the cell is infected
-				if (rand.nextDouble() < infectRate) {
-					setColor(infectedColour);
-					setNextState(true);
-				}
-			}
-		}
-	}
-
-	/**
-	 * Gets all of the living neighbours of the cell and filters it by the colour
-	 * passed in
-	 * 
-	 * @param colour The colour of the neighbours to be retrieved
-	 * @return A list of neighbouring cells of the same colour as the parameter
-	 */
-	protected List<Cell> getLivingNeighboursByColour(Color colour) {
-		return getField().getLivingNeighbours(getLocation()).stream().filter(cell -> cell.getColor().equals(colour))
-				.collect(Collectors.toList());
-	}
-
-	/**
 	 * Check whether the cell is alive or not.
 	 * 
 	 * @return true if the cell is still alive.
@@ -220,4 +131,97 @@ public abstract class Cell {
 	protected Field getField() {
 		return field;
 	}
+
+	/**
+	 * Cell is engulfed by an infected cell is dead and within the probability.
+	 * Cell is engulfed by a Helicobacter if matching the rules.
+	 */
+	protected void getEngulfedIfPossible() {
+		Random rand = Randomizer.getRandom();
+
+		// if the cell is not alive
+		if (!(isAlive())) {
+			// get the number of infected neighbours
+			int infectedNum = getLivingNeighboursByColour(infectedColour).size();
+
+			// if there are more than 3 infected neighbours,
+			// there is a probability for that cell to become infected
+			if (infectedNum > 3 && rand.nextDouble() < 0.11) {
+				setColor(infectedColour);
+				setNextState(true);
+			}
+		}
+
+		// if the cell is not a Helicobacter
+		if (!(getColor().equals(heliColour))) {
+			// get number of helicobacter neighbours
+			int heliNum = getLivingNeighboursByColour(heliColour).size();
+
+			double engulfProbability = 0.6;
+
+			if (rand.nextDouble() < engulfProbability) {
+				// if cell is surrounded by between 1 and 3 Helicobacters
+				if (heliNum >= 1 && heliNum <= 3) {
+					// there is a probability that the cell is turned in to a Helicobacter
+					if (rand.nextDouble() < 0.15) {
+						setColor(heliColour);
+						setNextState(true);
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Changes the cell becomes a different cell when two different, neighbouring
+	 * cells collide
+	 */
+	protected void breedIfPossible() {};
+
+	// /**
+	//  * @return whether the cell is a Heliobacter or not
+	//  */
+	// protected boolean isHeli() {
+	// 	// needed as Helicobacter's colour is constantly changing
+	// 	return getColor() != mycoColour && getColor() != isseColour && getColor() != infectedColour;
+	// }
+
+	/**
+	 * Infects the cell if it is surrounded by infected cells and is within the
+	 * probability
+	 */
+	protected void getInfectedIfPossible() {
+		Random rand = new Random();
+
+		// get all the infected neighbours
+		List<Cell> infectedNeighbours = getLivingNeighboursByColour(infectedColour);
+
+		// probability of infecting this cell
+		double infectRate = 0.1025;
+
+		// if the cell is not infected
+		if (!getColor().equals(infectedColour)) {
+			// if the cell is surrounded by more than one infected neighbour
+			if (infectedNeighbours.size() >= 1) {
+				// there is a chance that the cell is infected
+				if (rand.nextDouble() < infectRate) {
+					setColor(infectedColour);
+					setNextState(true);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Gets all of the living neighbours of the cell and filters it by the colour
+	 * passed in
+	 * 
+	 * @param colour The colour of the neighbours to be retrieved
+	 * @return A list of neighbouring cells of the same colour as the parameter
+	 */
+	protected List<Cell> getLivingNeighboursByColour(Color colour) {
+		return getField().getLivingNeighbours(getLocation()).stream().filter(cell -> cell.getColor().equals(colour))
+				.collect(Collectors.toList());
+	}
+
 }

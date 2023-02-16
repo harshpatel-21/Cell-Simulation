@@ -95,19 +95,21 @@ public class Simulator {
      * @param numGenerations The number of generations to run for.
      */
     public void simulate(int numGenerations) {
-        while (true && view.isViable(field)) {
+        while (view.isViable(field)) {
 
+            // simulate until generation limit reached while not paused
             if (!view.getPause() && generation <= numGenerations) {
                 simOneGeneration();
-                generation++;
             }
 
+            // reset simulation
             if (view.getReset()) {
                 reset();
                 view.resetState();
             }
-            delay((int) (30 / view.getSpeed()));
 
+            // delay to control speed of simulation
+            delay((int) (30 / view.getSpeed()));
         }
     }
 
@@ -122,6 +124,7 @@ public class Simulator {
             Cell cell = it.next();
             cell.act(generation);
 
+            // if the cell is not infected, it can breed and/or get infected
             if (cell.getColor() != Color.RED) {
                 cell.breedIfPossible();
                 cell.getInfectedIfPossible();
@@ -153,8 +156,8 @@ public class Simulator {
      * Randomly populate the field live/dead life forms
      */
     private void populate() {
-        // Random rand = Randomizer.getRandom();
         field.clear();
+        // iterates over each location in the field
         for (int row = 0; row < field.getDepth(); row++) {
             for (int col = 0; col < field.getWidth(); col++) {
                 Location location = new Location(row, col);
@@ -163,47 +166,57 @@ public class Simulator {
         }
     }
 
+    /**
+     * For each cell in the field, populate it with a random cell, depending on the
+     * probability that it is alive, and the region on the field
+     * 
+     * @param location The current location of the grid being populated
+     */
     private void populateSingleLocation(Location location) {
         Random rand = Randomizer.getRandom();
+
         int row = location.getRow();
         int col = location.getCol();
 
+        // spawn Mycoplasma in bottom half if random number within probability
         if (rand.nextDouble() <= MYCOPLASMA_ALIVE_PROB && row > DEFAULT_DEPTH / 2) {
             Mycoplasma myco = new Mycoplasma(field, location);
             cells.add(myco);
+            // spawn Helicobacter in top right quadrant if random number within probability
         } else if (rand.nextDouble() <= HELICOBACTER_ALIVE_PROB && col >= DEFAULT_WIDTH / 2
                 && row <= DEFAULT_DEPTH / 2) {
             Helicobacter heli = new Helicobacter(field, location);
             cells.add(heli);
+            // spawn Isseria in top left quadrant if random number within probability
         } else if (rand.nextDouble() <= ISSERIA_ALIVE_PROB && col <= DEFAULT_WIDTH / 2 && row <= DEFAULT_DEPTH / 2) {
             Isseria isse = new Isseria(field, location);
             cells.add(isse);
+            // otherwise, create a dead cell at that location
         } else
             createDeadCell(location);
     }
 
+    /**
+     * Populate the location with a dead cell. The cell type is dependent on the
+     * region on the field that the location is
+     * 
+     * @param location The current location of the grid being populated
+     */
     private void createDeadCell(Location location) {
-        Random rand = Randomizer.getRandom();
-
         int row = location.getRow();
         int col = location.getCol();
 
-        // col >= DEFAULT_WIDTH/4 - 0.2*DEFAULT_WIDTH/4 && col <= DEFAULT_WIDTH/4 +
-        // 0.2*DEFAULT_WIDTH/4
-        // if (col <= DEFAULT_WIDTH/2 && row >= DEFAULT_DEPTH/2 - 0.05*DEFAULT_WIDTH/4
-        // && row <= DEFAULT_DEPTH/2 + 0.05*DEFAULT_WIDTH/4) {
-        // Plebsiella pleb = new Plebsiella(field, location, Color.GREEN);
-        // pleb.setDead();
-        // cells.add(pleb);
-        // }
+        // spawn dead Isseria in top left quadrant
         if (col <= DEFAULT_WIDTH / 2 && row <= DEFAULT_DEPTH / 2) {
             Isseria isse = new Isseria(field, location);
             isse.setDead();
             cells.add(isse);
+            // spawn dead Helicobacter in top right quadrant
         } else if (col >= DEFAULT_WIDTH / 2 && row <= DEFAULT_DEPTH / 2) {
             Helicobacter heli = new Helicobacter(field, location);
             heli.setDead();
             cells.add(heli);
+            // spawn dead Mycoplasma in bottom half
         } else {
             Mycoplasma myco = new Mycoplasma(field, location);
             myco.setDead();

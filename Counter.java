@@ -1,5 +1,3 @@
-import java.awt.Color;
-
 /**
  * Provide a counter for a participant in the simulation.
  * This includes an identifying string and a count of how
@@ -19,7 +17,8 @@ public class Counter {
 
     /**
      * Provide a name for one of the simulation types.
-     * @param name  A class of life
+     * 
+     * @param name A class of life
      */
     public Counter(String name) {
         this.name = name;

@@ -1,8 +1,6 @@
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * A graphical view of the simulation grid. The view displays a rectangle for
@@ -13,7 +11,7 @@ import java.util.Map;
  * @version 2022.01.06 (1)
  */
 
-public class SimulatorView extends JFrame implements ActionListener{
+public class SimulatorView extends JFrame implements ActionListener {
     // Colors used for empty locations.
     private static final Color EMPTY_COLOR = Color.white;
 
@@ -45,9 +43,9 @@ public class SimulatorView extends JFrame implements ActionListener{
     boolean reset = false;
     double speedMultiplier;
 
-
     /**
      * Create a view of the given width and height.
+     * 
      * @param height The simulation's height.
      * @param width  The simulation's width.
      */
@@ -60,20 +58,19 @@ public class SimulatorView extends JFrame implements ActionListener{
         population = new JLabel(POPULATION_PREFIX, JLabel.CENTER);
 
         Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
-        
-        // width will store the width of the screen
-        int screen_width = (int)size.getWidth();
-        
-        // height will store the height of the screen
-        int screen_height = (int)size.getHeight();
 
-        // center the window to the center of the screen
-        setLocation((int) (screen_width*0.5 - (width*3)), (int) (screen_height*0.5 - (height*3)));
+        // width of the screen
+        int screen_width = (int) size.getWidth();
+
+        // height of the screen
+        int screen_height = (int) size.getHeight();
+
+        // center the window
+        setLocation((int) (screen_width * 0.5 - (width * 3)), (int) (screen_height * 0.5 - (height * 3)));
 
         fieldView = new FieldView(height, width);
 
         Container contents = getContentPane();
-        // create the panel that is to go at the bottom
         createBottomPane();
 
         JPanel infoPane = new JPanel(new BorderLayout());
@@ -85,95 +82,93 @@ public class SimulatorView extends JFrame implements ActionListener{
 
         GridBagConstraints c = new GridBagConstraints();
 
-        c.gridx=0;
-        c.gridy=0;
+        c.gridx = 0;
+        c.gridy = 0;
         contents.add(infoPane, c);
-        c.gridx=0;
-        c.gridy=1;
+        c.gridx = 0;
+        c.gridy = 1;
         contents.add(fieldView, c);
-        c.gridx=0;
-        c.gridy=2;
-        contents.add(population,c);
-        c.gridx=0;
-        c.gridy=3;
+        c.gridx = 0;
+        c.gridy = 2;
+        contents.add(population, c);
+        c.gridx = 0;
+        c.gridy = 3;
         contents.add(bottomPane, c);
 
         pack();
         setVisible(true);
     }
 
-    public void actionPerformed(ActionEvent e){
-        if (e.getSource() == pauseButton){
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == pauseButton) {
             paused = !paused;
             if (paused) {
                 pauseButton.setText("Resume");
-            }
-            else {
+            } else {
                 pauseButton.setText("Pause");
-            };
-        }
-        else if (e.getSource() == resetButton){
-            reset=true;
-        }
-        else if (e.getSource() == speedBox){
+            }
+        } else if (e.getSource() == resetButton) {
+            reset = true;
+        } else if (e.getSource() == speedBox) {
             speedMultiplier = (double) Double.parseDouble(speedBox.getSelectedItem().toString());
         }
-    } 
+    }
 
-    public boolean getPause(){
+    public boolean getPause() {
         return paused;
     }
 
-    public boolean getReset(){
+    public boolean getReset() {
         return reset;
     }
 
-    public double getSpeed(){
+    public double getSpeed() {
         return speedMultiplier;
     }
 
-    public void resetState(){
+    public void resetState() {
         resetBottomPane();
     }
 
     /**
-     * creates the Bottom Panel along with the default values for it. Called when its created and when reeset.
+     * creates the Bottom Panel along with the default values for it. Called when
+     * its created and when reeset.
      */
-    public void createBottomPane(){
+    public void createBottomPane() {
         // default values for the fields
         speedMultiplier = 1;
         paused = reset;
-        reset = false; 
+        reset = false;
 
         // the outer panel which will store our buttons
         bottomPane = new JPanel();
         bottomPane.setLayout(new GridBagLayout()); // using the GridBagLayout
 
         // create all the buttons and the speed selection box
-        String[] speedMultipliers = {"0.1","0.5","1","10","100","1000"};
+        String[] speedMultipliers = { "0.1", "0.5", "1", "10", "100", "1000" };
         speedBox = new JComboBox<String>(speedMultipliers);
         pauseButton = new JButton("Pause");
         resetButton = new JButton("Reset");
 
         // create an innter panel to group Speed label Text and the Speed Selection box
         JPanel speedPanel = new JPanel(new GridBagLayout());
-        JLabel speedLabel = new JLabel("Speed Multiplier: ",JLabel.CENTER);
+        JLabel speedLabel = new JLabel("Speed Multiplier: ", JLabel.CENTER);
         GridBagConstraints speedConstraints = new GridBagConstraints();
-        
+
         // create the constraints object used to position the buttons on the grid
         GridBagConstraints gridConstraints = new GridBagConstraints();
         gridConstraints.fill = GridBagConstraints.NONE;
-        gridConstraints.insets = new Insets(13,0,0,0); // add 13px of vertical padding
+        gridConstraints.insets = new Insets(13, 0, 0, 0); // add 13px of vertical padding
 
         // add the speed panel (includes text and box) to column 1
         gridConstraints.gridx = 1;
         speedConstraints.gridx = 0;
         speedConstraints.gridy = 0;
-        speedPanel.add(speedLabel,speedConstraints);
-        
+        speedPanel.add(speedLabel, speedConstraints);
+
         speedConstraints.gridx = 1;
         speedConstraints.gridy = 0;
-        speedPanel.add(speedBox,speedConstraints);
+        speedPanel.add(speedBox, speedConstraints);
 
         speedBox.setSelectedIndex(2); // default speed is at index 1, which is the multiplier 1
         bottomPane.add(speedPanel, gridConstraints);
@@ -192,14 +187,13 @@ public class SimulatorView extends JFrame implements ActionListener{
         speedBox.addActionListener(this);
     }
 
-    public void resetBottomPane(){
+    public void resetBottomPane() {
         paused = true;
-        reset=false;
-        speedMultiplier=1;
+        reset = false;
+        speedMultiplier = 1;
 
         pauseButton.setText("Start");
         speedBox.setSelectedIndex(2); // default speed is at index 1, which is the multiplier 1
-
     }
 
     /**
@@ -211,39 +205,40 @@ public class SimulatorView extends JFrame implements ActionListener{
 
     /**
      * Show the current status of the field.
+     * 
      * @param generation The current generation.
-     * @param field The field whose status is to be displayed.
+     * @param field      The field whose status is to be displayed.
      */
     public void showStatus(int generation, Field field) {
-      if (!isVisible()) {
-        setVisible(true);
-      }
-
-      genLabel.setText(GENERATION_PREFIX + generation);
-      stats.reset();
-      fieldView.preparePaint();
-
-      for (int row = 0; row < field.getDepth(); row++) {
-        for (int col = 0; col < field.getWidth(); col++) {
-          Cell cell = field.getObjectAt(row, col);
-
-          if (cell != null && cell.isAlive()) {
-            stats.incrementCount(cell.getClass());
-            fieldView.drawMark(col, row, cell.getColor());
-          }
-          else {
-            fieldView.drawMark(col, row, EMPTY_COLOR);
-          }
+        if (!isVisible()) {
+            setVisible(true);
         }
-      }
 
-      stats.countFinished();
-      population.setText(POPULATION_PREFIX + "  "+stats.getPopulationDetails(field));
-      fieldView.repaint();
+        genLabel.setText(GENERATION_PREFIX + generation);
+        stats.reset();
+        fieldView.preparePaint();
+
+        for (int row = 0; row < field.getDepth(); row++) {
+            for (int col = 0; col < field.getWidth(); col++) {
+                Cell cell = field.getObjectAt(row, col);
+
+                if (cell != null && cell.isAlive()) {
+                    stats.incrementCount(cell.getClass());
+                    fieldView.drawMark(col, row, cell.getColor());
+                } else {
+                    fieldView.drawMark(col, row, EMPTY_COLOR);
+                }
+            }
+        }
+
+        stats.countFinished();
+        population.setText(POPULATION_PREFIX + "  " + stats.getPopulationDetails(field));
+        fieldView.repaint();
     }
 
     /**
      * Determine whether the simulation should continue to run.
+     * 
      * @return true If there is more than one species alive.
      */
     public boolean isViable(Field field) {
@@ -280,7 +275,7 @@ public class SimulatorView extends JFrame implements ActionListener{
          */
         public Dimension getPreferredSize() {
             return new Dimension(gridWidth * GRID_VIEW_SCALING_FACTOR,
-                                 gridHeight * GRID_VIEW_SCALING_FACTOR);
+                    gridHeight * GRID_VIEW_SCALING_FACTOR);
         }
 
         /**
@@ -288,7 +283,7 @@ public class SimulatorView extends JFrame implements ActionListener{
          * may be resized, compute the scaling factor again.
          */
         public void preparePaint() {
-            if (!size.equals(getSize())) {  // if the size has changed...
+            if (!size.equals(getSize())) { // if the size has changed...
                 size = getSize();
                 fieldImage = fieldView.createImage(size.width, size.height);
                 g = fieldImage.getGraphics();
@@ -309,7 +304,7 @@ public class SimulatorView extends JFrame implements ActionListener{
          */
         public void drawMark(int x, int y, Color color) {
             g.setColor(color);
-            g.fillRect(x * xScale, y * yScale, xScale-1, yScale-1);
+            g.fillRect(x * xScale, y * yScale, xScale - 1, yScale - 1);
         }
 
         /**
@@ -321,8 +316,7 @@ public class SimulatorView extends JFrame implements ActionListener{
                 Dimension currentSize = getSize();
                 if (size.equals(currentSize)) {
                     g.drawImage(fieldImage, 0, 0, null);
-                }
-                else {
+                } else {
                     // Rescale the previous image.
                     g.drawImage(fieldImage, 0, 0, currentSize.width, currentSize.height, null);
                 }
