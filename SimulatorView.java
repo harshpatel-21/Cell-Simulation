@@ -153,7 +153,7 @@ public class SimulatorView extends JFrame implements ActionListener{
         // create all the buttons and the speed selection box
         String[] speedMultipliers = {"0.1","0.5","1","10","100","1000"};
         speedBox = new JComboBox<String>(speedMultipliers);
-        pauseButton = new JButton("Start");
+        pauseButton = new JButton("Pause");
         resetButton = new JButton("Reset");
 
         // create an innter panel to group Speed label Text and the Speed Selection box
@@ -181,7 +181,6 @@ public class SimulatorView extends JFrame implements ActionListener{
 
         // add the Start button in column 2
         gridConstraints.gridx = 2;
-        pauseButton.setText("Start");
         bottomPane.add(pauseButton, gridConstraints);
 
         // add the Reset button in column 3
