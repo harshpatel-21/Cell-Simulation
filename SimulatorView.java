@@ -41,7 +41,7 @@ public class SimulatorView extends JFrame implements ActionListener{
     JButton resetButton;
     JPanel bottomPane;
 
-    boolean paused = true;
+    boolean paused = false;
     boolean reset = false;
     double speedMultiplier;
 
@@ -74,7 +74,7 @@ public class SimulatorView extends JFrame implements ActionListener{
 
         Container contents = getContentPane();
         // create the panel that is to go at the bottom
-        createBottomPanel();
+        createBottomPane();
 
         JPanel infoPane = new JPanel(new BorderLayout());
 
@@ -114,7 +114,7 @@ public class SimulatorView extends JFrame implements ActionListener{
             };
         }
         else if (e.getSource() == resetButton){
-            reset=!reset;
+            reset=true;
         }
         else if (e.getSource() == speedBox){
             speedMultiplier = (double) Double.parseDouble(speedBox.getSelectedItem().toString());
@@ -134,17 +134,17 @@ public class SimulatorView extends JFrame implements ActionListener{
     }
 
     public void resetState(){
-        createBottomPanel();
+        resetBottomPane();
     }
 
     /**
      * creates the Bottom Panel along with the default values for it. Called when its created and when reeset.
      */
-    public void createBottomPanel(){
+    public void createBottomPane(){
         // default values for the fields
         speedMultiplier = 1;
-        reset = false;
-        paused = true;
+        paused = reset;
+        reset = false; 
 
         // the outer panel which will store our buttons
         bottomPane = new JPanel();
@@ -192,6 +192,16 @@ public class SimulatorView extends JFrame implements ActionListener{
         pauseButton.addActionListener(this);
         resetButton.addActionListener(this);
         speedBox.addActionListener(this);
+    }
+
+    public void resetBottomPane(){
+        paused = true;
+        reset=false;
+        speedMultiplier=1;
+
+        pauseButton.setText("Start");
+        speedBox.setSelectedIndex(2); // default speed is at index 1, which is the multiplier 1
+
     }
 
     /**
