@@ -135,6 +135,7 @@ public class Simulator {
 
         for (Cell cell : cells) {
             cell.updateState();
+            cell.darkenHeliColour(generation);
         }
 
         view.showStatus(generation, field);

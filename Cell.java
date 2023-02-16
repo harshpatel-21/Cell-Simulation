@@ -3,6 +3,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
+import javax.swing.plaf.ColorUIResource;
+
 /**
  * A class representing the shared characteristics of all forms of life
  *
@@ -27,7 +29,9 @@ public abstract class Cell {
 	// The cell's color
 	private Color color = Color.white;
 
-	protected Color heliColour = Color.CYAN;
+	private Color nextColor = color;
+
+	protected Color heliColour = new Color(200, 255, 222);
 	protected Color mycoColour = Color.ORANGE;
 	protected Color isseColour = Color.MAGENTA;
 	protected Color infectedColour = Color.RED;
@@ -81,6 +85,7 @@ public abstract class Cell {
 	 */
 	public void updateState() {
 		alive = nextAlive;
+		color = nextColor;
 	}
 
 	/**
@@ -90,11 +95,15 @@ public abstract class Cell {
 		return nextAlive;
 	}
 
-	/**
-	 * Changes the color of the cell
-	 */
+	// /**
+	//  * Changes the color of the cell
+	//  */
+	// public void setColor(Color col) {
+	// 	color = col;
+	// }
+
 	public void setColor(Color col) {
-		color = col;
+		nextColor = col;
 	}
 
 	/**
@@ -157,16 +166,14 @@ public abstract class Cell {
 			// get number of helicobacter neighbours
 			int heliNum = getLivingNeighboursByColour(heliColour).size();
 
-			double engulfProbability = 0.6;
+			double engulfProbability = 0.175;
 
 			if (rand.nextDouble() < engulfProbability) {
 				// if cell is surrounded by between 1 and 3 Helicobacters
 				if (heliNum >= 1 && heliNum <= 3) {
 					// there is a probability that the cell is turned in to a Helicobacter
-					if (rand.nextDouble() < 0.15) {
-						setColor(heliColour);
-						setNextState(true);
-					}
+					setColor(heliColour);
+					setNextState(true);
 				}
 			}
 		}
@@ -178,13 +185,13 @@ public abstract class Cell {
 	 */
 	protected void breedIfPossible() {};
 
-	// /**
-	//  * @return whether the cell is a Heliobacter or not
-	//  */
-	// protected boolean isHeli() {
-	// 	// needed as Helicobacter's colour is constantly changing
-	// 	return getColor() != mycoColour && getColor() != isseColour && getColor() != infectedColour;
-	// }
+	/**
+	 * @return whether the cell is a Heliobacter or not
+	 */
+	protected boolean isHeli() {
+		// needed as Helicobacter's colour is constantly changing
+		return getColor() != mycoColour && getColor() != isseColour && getColor() != infectedColour;
+	}
 
 	/**
 	 * Infects the cell if it is surrounded by infected cells and is within the
@@ -223,5 +230,14 @@ public abstract class Cell {
 		return getField().getLivingNeighbours(getLocation()).stream().filter(cell -> cell.getColor().equals(colour))
 				.collect(Collectors.toList());
 	}
+
+	protected void darkenHeliColour(int generation) {
+		int r = (int) Math.max(200-(0.4*generation),52);
+		int g = (int) Math.max(255-(0.4*generation),126);
+		int b = (int) Math.max(222-(0.4*generation),255);
+		
+		heliColour = new Color(r, g, b);
+		if (isHeli()) setColor(heliColour);
+}
 
 }
