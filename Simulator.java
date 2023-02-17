@@ -109,7 +109,7 @@ public class Simulator {
             }
 
             // delay to control speed of simulation
-            delay((int) (30 / view.getSpeed()));
+            delay((int) (500 / view.getSpeed()));
         }
     }
 

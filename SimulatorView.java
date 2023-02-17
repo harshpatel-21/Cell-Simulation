@@ -1,6 +1,7 @@
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import javax.swing.event.*;
 
 /**
  * A graphical view of the simulation grid. The view displays a rectangle for
@@ -11,7 +12,7 @@ import javax.swing.*;
  * @version 2022.01.06 (1)
  */
 
-public class SimulatorView extends JFrame implements ActionListener {
+public class SimulatorView extends JFrame implements ActionListener,ChangeListener {
     // Colors used for empty locations.
     private static final Color EMPTY_COLOR = Color.white;
 
@@ -35,12 +36,13 @@ public class SimulatorView extends JFrame implements ActionListener {
     private FieldStats stats;
 
     JComboBox<String> speedBox;
+    JSlider speedSlider;
     JButton pauseButton;
     JButton resetButton;
     JPanel bottomPane;
 
-    boolean paused = false;
-    boolean reset = false;
+    boolean paused;
+    boolean reset;
     double speedMultiplier;
 
     /**
@@ -99,6 +101,7 @@ public class SimulatorView extends JFrame implements ActionListener {
         setVisible(true);
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == pauseButton) {
             paused = !paused;
@@ -109,8 +112,18 @@ public class SimulatorView extends JFrame implements ActionListener {
             }
         } else if (e.getSource() == resetButton) {
             reset = true;
+
         } else if (e.getSource() == speedBox) {
-            speedMultiplier = (double) Double.parseDouble(speedBox.getSelectedItem().toString());
+            speedMultiplier = Double.parseDouble(speedBox.getSelectedItem().toString());
+        }
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent e){    
+        if (e.getSource() == speedSlider) {
+            if (!speedSlider.getValueIsAdjusting()) {
+            speedMultiplier =(int)speedSlider.getValue();
+            }
         }
     }
 
@@ -136,7 +149,7 @@ public class SimulatorView extends JFrame implements ActionListener {
      */
     public void createBottomPane() {
         // default values for the fields
-        speedMultiplier = 1;
+        speedMultiplier = 16;
         paused = reset;
         reset = false;
 
@@ -147,6 +160,9 @@ public class SimulatorView extends JFrame implements ActionListener {
         // create all the buttons and the speed selection box
         String[] speedMultipliers = { "0.1", "0.5", "1", "10", "100", "1000" };
         speedBox = new JComboBox<String>(speedMultipliers);
+        speedSlider = new JSlider(1,500,(int)speedMultiplier);
+        speedSlider.setMajorTickSpacing(100);
+        speedSlider.setSnapToTicks(true);
         pauseButton = new JButton("Pause");
         resetButton = new JButton("Reset");
 
@@ -168,7 +184,7 @@ public class SimulatorView extends JFrame implements ActionListener {
 
         speedConstraints.gridx = 1;
         speedConstraints.gridy = 0;
-        speedPanel.add(speedBox, speedConstraints);
+        speedPanel.add(speedSlider, speedConstraints);
 
         speedBox.setSelectedIndex(2); // default speed is at index 1, which is the multiplier 1
         bottomPane.add(speedPanel, gridConstraints);
@@ -185,15 +201,17 @@ public class SimulatorView extends JFrame implements ActionListener {
         pauseButton.addActionListener(this);
         resetButton.addActionListener(this);
         speedBox.addActionListener(this);
+        speedSlider.addChangeListener(this);
     }
 
     public void resetBottomPane() {
         paused = true;
         reset = false;
-        speedMultiplier = 1;
+        speedMultiplier = 16;
 
         pauseButton.setText("Start");
         speedBox.setSelectedIndex(2); // default speed is at index 1, which is the multiplier 1
+        speedSlider.setValue(16);
     }
 
     /**
