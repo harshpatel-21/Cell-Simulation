@@ -31,7 +31,7 @@ public abstract class Cell {
 
 	private Color nextColor = color;
 
-	protected Color heliColour = new Color(200, 255, 222);
+	protected Color heliColour = new Color(200, 255, 255);
 	protected Color mycoColour = Color.ORANGE;
 	protected Color isseColour = Color.MAGENTA;
 	protected Color infectedColour = Color.RED;
@@ -239,7 +239,7 @@ public abstract class Cell {
 	protected void darkenHeliColour(int generation) {
 		int r = (int) Math.max(200-(0.4*generation),52);
 		int g = (int) Math.max(255-(0.4*generation),126);
-		int b = (int) Math.max(222-(0.4*generation),255);
+		int b = 255;
 		
 		heliColour = new Color(r, g, b);
 		if (isHeli()) setNextColor(heliColour);

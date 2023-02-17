@@ -41,6 +41,9 @@ public class SimulatorView extends JFrame implements ActionListener,ChangeListen
     JButton resetButton;
     JPanel bottomPane;
 
+    int sliderUpperBound = 100;
+    int defaultSliderValue = 50;
+    int currentSliderValue;
     boolean paused;
     boolean reset;
     double speedMultiplier;
@@ -113,16 +116,17 @@ public class SimulatorView extends JFrame implements ActionListener,ChangeListen
         } else if (e.getSource() == resetButton) {
             reset = true;
 
-        } else if (e.getSource() == speedBox) {
-            speedMultiplier = Double.parseDouble(speedBox.getSelectedItem().toString());
         }
+        // else if (e.getSource() == speedBox) {
+        //     speedMultiplier = Double.parseDouble(speedBox.getSelectedItem().toString());
+        // }
     }
 
     @Override
     public void stateChanged(ChangeEvent e){    
         if (e.getSource() == speedSlider) {
             if (!speedSlider.getValueIsAdjusting()) {
-            speedMultiplier =(int)speedSlider.getValue();
+            currentSliderValue = speedSlider.getValue();
             }
         }
     }
@@ -135,8 +139,11 @@ public class SimulatorView extends JFrame implements ActionListener,ChangeListen
         return reset;
     }
 
-    public double getSpeed() {
-        return speedMultiplier;
+    /**
+     * @return how far along the slider is.
+     */
+    public double getDelayMultiplier(){
+        return ((double)currentSliderValue/(double)sliderUpperBound); 
     }
 
     public void resetState() {
@@ -149,7 +156,7 @@ public class SimulatorView extends JFrame implements ActionListener,ChangeListen
      */
     public void createBottomPane() {
         // default values for the fields
-        speedMultiplier = 15;
+        currentSliderValue = defaultSliderValue;
         paused = reset;
         reset = false;
 
@@ -157,16 +164,19 @@ public class SimulatorView extends JFrame implements ActionListener,ChangeListen
         bottomPane = new JPanel();
         bottomPane.setLayout(new GridBagLayout()); // using the GridBagLayout
 
-        // create all the buttons and the speed selection box
-        String[] speedMultipliers = { "0.1", "0.5", "1", "10", "100", "1000" };
-        speedBox = new JComboBox<String>(speedMultipliers);
-        speedSlider = new JSlider(1,100,(int)speedMultiplier);
+        // create all the buttons and the speed selection slider
+        speedSlider = new JSlider(0, sliderUpperBound+1, currentSliderValue);
+        speedSlider.setMinorTickSpacing(5);
+        speedSlider.setSnapToTicks(true); 
+        speedSlider.setPaintTicks(true);
+        speedSlider.setInverted(true); // invert the scale. eg from 0-100 to 100-0
+
         pauseButton = new JButton("Pause");
         resetButton = new JButton("Reset");
 
-        // create an innter panel to group Speed label Text and the Speed Selection box
+        // create an innter panel to group Speed label Text and the Speed Selection Slider
         JPanel speedPanel = new JPanel(new GridBagLayout());
-        JLabel speedLabel = new JLabel("Speed Multiplier: ", JLabel.CENTER);
+        JLabel speedLabel = new JLabel("Simulation Speed: ", JLabel.CENTER);
         GridBagConstraints speedConstraints = new GridBagConstraints();
 
         // create the constraints object used to position the buttons on the grid
@@ -174,7 +184,7 @@ public class SimulatorView extends JFrame implements ActionListener,ChangeListen
         gridConstraints.fill = GridBagConstraints.NONE;
         gridConstraints.insets = new Insets(13, 0, 0, 0); // add 13px of vertical padding
 
-        // add the speed panel (includes text and box) to column 1
+        // add the speed panel (includes text and slider) to column 1
         gridConstraints.gridx = 1;
         speedConstraints.gridx = 0;
         speedConstraints.gridy = 0;
@@ -184,7 +194,6 @@ public class SimulatorView extends JFrame implements ActionListener,ChangeListen
         speedConstraints.gridy = 0;
         speedPanel.add(speedSlider, speedConstraints);
 
-        speedBox.setSelectedIndex(2); // default speed is at index 1, which is the multiplier 1
         bottomPane.add(speedPanel, gridConstraints);
 
         // add the Start button in column 2
@@ -198,18 +207,17 @@ public class SimulatorView extends JFrame implements ActionListener,ChangeListen
         // add action listerners for when the buttons are clicked
         pauseButton.addActionListener(this);
         resetButton.addActionListener(this);
-        speedBox.addActionListener(this);
         speedSlider.addChangeListener(this);
     }
 
     public void resetBottomPane() {
         paused = true;
         reset = false;
-        speedMultiplier = 15;
+        currentSliderValue = defaultSliderValue;
 
         pauseButton.setText("Start");
-        speedBox.setSelectedIndex(2); // default speed is at index 1, which is the multiplier 1
-        speedSlider.setValue(16);
+        // speedBox.setSelectedIndex(2); // default speed is at index 1, which is the multiplier 1
+        speedSlider.setValue(currentSliderValue);
     }
 
     /**
