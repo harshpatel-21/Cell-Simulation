@@ -160,9 +160,7 @@ public class SimulatorView extends JFrame implements ActionListener,ChangeListen
         // create all the buttons and the speed selection box
         String[] speedMultipliers = { "0.1", "0.5", "1", "10", "100", "1000" };
         speedBox = new JComboBox<String>(speedMultipliers);
-        speedSlider = new JSlider(1,500,(int)speedMultiplier);
-        speedSlider.setMajorTickSpacing(100);
-        speedSlider.setSnapToTicks(true);
+        speedSlider = new JSlider(1,100,(int)speedMultiplier);
         pauseButton = new JButton("Pause");
         resetButton = new JButton("Reset");
 
