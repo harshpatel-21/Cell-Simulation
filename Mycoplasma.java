@@ -74,10 +74,10 @@ public class Mycoplasma extends Cell {
         if (sameNeighbours.size() >= 1 && isseNeighbours.size() >= 1) {
             // probability that the cells becomes infected
             if (rand.nextDouble() < 0.9) {
-                setColor(infectedColour);
+                setNextColor(infectedColour);
                 // otherwise, make cell Isseria
             } else {
-                setColor(isseColour);
+                setNextColor(isseColour);
             }
             setNextState(true);
         }

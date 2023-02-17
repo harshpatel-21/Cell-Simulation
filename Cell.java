@@ -48,7 +48,12 @@ public abstract class Cell {
 		this.field = field;
 
 		setLocation(location);
-		setColor(col);
+		setInitialColor(col);
+	}
+
+	public void setInitialColor(Color col){
+		nextColor = col;
+		color = col;
 	}
 
 	/**
@@ -102,7 +107,7 @@ public abstract class Cell {
 	// 	color = col;
 	// }
 
-	public void setColor(Color col) {
+	public void setNextColor(Color col) {
 		nextColor = col;
 	}
 
@@ -156,7 +161,7 @@ public abstract class Cell {
 			// if there are more than 3 infected neighbours,
 			// there is a probability for that cell to become infected
 			if (infectedNum > 3 && rand.nextDouble() < 0.11) {
-				setColor(infectedColour);
+				setNextColor(infectedColour);
 				setNextState(true);
 			}
 		}
@@ -172,7 +177,7 @@ public abstract class Cell {
 				// if cell is surrounded by between 1 and 3 Helicobacters
 				if (heliNum >= 1 && heliNum <= 3) {
 					// there is a probability that the cell is turned in to a Helicobacter
-					setColor(heliColour);
+					setNextColor(heliColour);
 					setNextState(true);
 				}
 			}
@@ -212,7 +217,7 @@ public abstract class Cell {
 			if (infectedNeighbours.size() >= 1) {
 				// there is a chance that the cell is infected
 				if (rand.nextDouble() < infectRate) {
-					setColor(infectedColour);
+					setNextColor(infectedColour);
 					setNextState(true);
 				}
 			}
@@ -237,7 +242,7 @@ public abstract class Cell {
 		int b = (int) Math.max(222-(0.4*generation),255);
 		
 		heliColour = new Color(r, g, b);
-		if (isHeli()) setColor(heliColour);
+		if (isHeli()) setNextColor(heliColour);
 }
 
 }
