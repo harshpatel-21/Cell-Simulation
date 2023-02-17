@@ -149,7 +149,7 @@ public class SimulatorView extends JFrame implements ActionListener,ChangeListen
      */
     public void createBottomPane() {
         // default values for the fields
-        speedMultiplier = 16;
+        speedMultiplier = 15;
         paused = reset;
         reset = false;
 
@@ -205,7 +205,7 @@ public class SimulatorView extends JFrame implements ActionListener,ChangeListen
     public void resetBottomPane() {
         paused = true;
         reset = false;
-        speedMultiplier = 16;
+        speedMultiplier = 15;
 
         pauseButton.setText("Start");
         speedBox.setSelectedIndex(2); // default speed is at index 1, which is the multiplier 1
