@@ -10,7 +10,7 @@ import javax.swing.event.*;
  *
  * @author David J. Barnes, Michael Kölling & Jeffery Raphael, Harshraj Patel &
  *         Ishab Ahmed
- * @version 2022.01.06 (1)
+ * @version 2023.02.20
  */
 
 public class SimulatorView extends JFrame implements ActionListener, ChangeListener {
@@ -27,7 +27,7 @@ public class SimulatorView extends JFrame implements ActionListener, ChangeListe
     private final String POPULATION_PREFIX = "Population: ";
 
     // GUI labels
-    private JLabel genLabel, population, infoLabel;
+    private JLabel genLabel, population, infoLabel, instructionLabel;
 
     // Extends the multi-line plain text view to be suitable for a single-line
     // editor view. (part of Swing)
@@ -36,28 +36,32 @@ public class SimulatorView extends JFrame implements ActionListener, ChangeListe
     // A statistics object computing and storing simulation information
     private FieldStats stats;
 
-    JSlider speedSlider;
-    JButton pauseButton;
-    JButton resetButton;
+    // components on the bottom pane
+    JSlider speedSlider; // changes hpw fast the simulation run
+    JButton pauseButton; // button to pause/resume simulation
+    JButton resetButton; // button to reset simulation
 
+    // simulation speed slider values
     int sliderUpperBound = 100;
-    int defaultSliderValue = 50;
+    int defaultSliderValue = sliderUpperBound / 2;
     int currentSliderValue;
 
+    double speedMultiplier; // speed of simulation
+
+    // keep track of state of simulation
     boolean paused;
     boolean reset;
-    double speedMultiplier;
 
     private Container contents = getContentPane();
 
     /**
-     * Create a view of the given width and height.
+     * Create a centred view of the given width and height.
+     * Adds different components of the view in a grid layout
      * 
      * @param height The simulation's height.
      * @param width  The simulation's width.
      */
     public SimulatorView(int height, int width) {
-
         stats = new FieldStats();
 
         setTitle("Life Simulation");
@@ -67,13 +71,10 @@ public class SimulatorView extends JFrame implements ActionListener, ChangeListe
 
         Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
 
-        // width of the screen
         int screen_width = (int) size.getWidth();
-
-        // height of the screen
         int screen_height = (int) size.getHeight();
 
-        // center the window
+        // centre the window
         setLocation((int) (screen_width * 0.5 - (width * 3)), (int) (screen_height * 0.5 - (height * 3)));
 
         fieldView = new FieldView(height, width);
@@ -88,7 +89,7 @@ public class SimulatorView extends JFrame implements ActionListener, ChangeListe
         contents.setLayout(new GridBagLayout());
         GridBagConstraints mainConstraints = new GridBagConstraints();
 
-        // positionining the different components
+        // positionining the components vertically
         mainConstraints.gridy = 0;
         contents.add(infoPane, mainConstraints);
 
@@ -101,6 +102,12 @@ public class SimulatorView extends JFrame implements ActionListener, ChangeListe
         mainConstraints.gridy = 3;
         contents.add(bottomPane, mainConstraints);
 
+        instructionLabel = new JLabel("You need to start a simulation with a specified number of generations!");
+        mainConstraints.gridy = 4;
+        // padding above and below the instruction label
+        mainConstraints.insets = new Insets(10, 0, 10, 0);
+        contents.add(instructionLabel, mainConstraints);
+
         // close the frame if the window is closed
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -108,17 +115,26 @@ public class SimulatorView extends JFrame implements ActionListener, ChangeListe
         setVisible(true);
     }
 
+    /**
+     * Enable components in order to make them interactable.
+     */
     public void enableBottomComponents() {
         speedSlider.setEnabled(true);
         pauseButton.setEnabled(true);
         resetButton.setEnabled(true);
+
+        contents.remove(instructionLabel);
+        // used to update the scene graph with the above removal
+        contents.validate();
+        // redraw the Container with the instruction label removed
+        contents.repaint();
     }
 
     /**
-     * creates the Bottom Panel along with the default values for it. Called when
-     * its created and when reset.
+     * Creates the bottom pane which is responsible for toggling the simulation and
+     * affecting its speed. The components are initially disabled.
      * 
-     * @return JPanel containing all the boxes in the bottom Pane
+     * @return bottomPane a JPanel object containing all of the components
      */
     public JPanel createBottomPane() {
         // default values for the fields
@@ -126,55 +142,52 @@ public class SimulatorView extends JFrame implements ActionListener, ChangeListe
         paused = reset;
         reset = false;
 
-        // the outer panel which will store our buttons
+        // pane to hold components
         JPanel bottomPane = new JPanel();
         bottomPane.setLayout(new GridBagLayout()); // using the GridBagLayout
 
         // create all the buttons and the speed selection slider
-        speedSlider = new JSlider(0, sliderUpperBound + 1, currentSliderValue);
+        speedSlider = new JSlider(0, sliderUpperBound, currentSliderValue);
         speedSlider.setMinorTickSpacing(5);
         speedSlider.setSnapToTicks(true);
         speedSlider.setPaintTicks(true);
         speedSlider.setInverted(true); // invert the scale. eg from 0-100 to 100-0
-        speedSlider.setEnabled(false);
 
         pauseButton = new JButton("Pause");
-        pauseButton.setEnabled(false);
 
         resetButton = new JButton("Reset");
+
+        // disable all components (to only be interactable when simulate is called)
+        speedSlider.setEnabled(false);
+        pauseButton.setEnabled(false);
         resetButton.setEnabled(false);
 
-        // create an innter panel to group Speed label Text and the Speed Selection
-        // Slider
-        JPanel speedPanel = new JPanel(new GridBagLayout());
+        // pane used to contain both the slider component and accompanying label
         JLabel speedLabel = new JLabel("Simulation Speed: ", JLabel.CENTER);
+        JPanel speedPane = new JPanel(new GridBagLayout());
 
         GridBagConstraints speedConstraints = new GridBagConstraints();
 
         // create the constraints object used to position the buttons on the grid
         GridBagConstraints gridConstraints = new GridBagConstraints();
         gridConstraints.fill = GridBagConstraints.NONE;
-        gridConstraints.insets = new Insets(13, 0, 0, 0); // add 13px of vertical padding
+        gridConstraints.insets = new Insets(13, 0, 0, 0); // add vertical padding
 
-        // add the speed panel (includes text and slider) to column 1
-        speedConstraints.gridx = 0;
-        speedConstraints.gridy = 0;
-        speedPanel.add(speedLabel, speedConstraints);
-
+        // add components to speed pane horizontally
+        speedPane.add(speedLabel, speedConstraints);
         speedConstraints.gridx = 1;
-        speedPanel.add(speedSlider, speedConstraints);
+        speedPane.add(speedSlider, speedConstraints);
 
-        bottomPane.add(speedPanel, gridConstraints);
+        // add components to main pane horizontally
+        bottomPane.add(speedPane, gridConstraints);
 
-        // add the Start button in column 2
-        gridConstraints.gridx = 2;
+        gridConstraints.gridx = 1;
         bottomPane.add(pauseButton, gridConstraints);
 
-        // add the Reset button in column 3
-        gridConstraints.gridx = 3;
+        gridConstraints.gridx = 2;
         bottomPane.add(resetButton, gridConstraints);
 
-        // add action listerners for when the buttons are clicked
+        // add listeners for when the buttons are clicked
         pauseButton.addActionListener(this);
         resetButton.addActionListener(this);
         speedSlider.addChangeListener(this);
@@ -183,70 +196,71 @@ public class SimulatorView extends JFrame implements ActionListener, ChangeListe
     }
 
     /**
-     * reset the fields that are used to determine the state of the simulation
-     * to their default values
+     * Reset state of button to the defaults.
      */
     public void resetBottomPane() {
         paused = true;
-        reset = false;
-        currentSliderValue = defaultSliderValue;
         pauseButton.setText("Start");
+
+        reset = false;
+
+        currentSliderValue = defaultSliderValue;
         speedSlider.setValue(currentSliderValue);
     }
 
     /**
-     * Listen for button presses
+     * Change state of fields on button press
+     * 
+     * @param event the event that occured
      */
     @Override
-    public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == pauseButton) {
+    public void actionPerformed(ActionEvent event) {
+        if (event.getSource() == pauseButton) {
             paused = !paused; // toggle pause state
-
             // display appropriate text depending on pause state
             if (paused) {
                 pauseButton.setText("Resume");
             } else {
                 pauseButton.setText("Pause");
             }
-        } else if (e.getSource() == resetButton) {
-            // set reset to true, and
+        } else if (event.getSource() == resetButton) {
             reset = true;
         }
     }
 
+    /**
+     * If slider is moved, update the internal value
+     * 
+     * @param event the event that ocurred
+     */
     @Override
-    public void stateChanged(ChangeEvent e) {
-        if (e.getSource() == speedSlider) {
+    public void stateChanged(ChangeEvent event) {
+        if (event.getSource() == speedSlider) {
             if (!speedSlider.getValueIsAdjusting()) {
                 currentSliderValue = speedSlider.getValue();
             }
         }
     }
 
+    /**
+     * @return whether the simulation is paused or not
+     */
     public boolean getPause() {
         return paused;
     }
 
+    /**
+     * @return whether the simulation needs to be reset or not
+     */
     public boolean getReset() {
         return reset;
     }
 
     /**
-     * @return how far along the slider is.
+     * @return the percentage of how far along the slider is
      */
     public double getDelayMultiplier() {
         return ((double) currentSliderValue / (double) sliderUpperBound);
-    }
-
-    public void resetState() {
-        resetBottomPane();
-    }
-
-    /**
-     * Display a short information label at the top of the window.
-     */
-    public void setInfoText(String text) {
-        infoLabel.setText(text);
     }
 
     /**

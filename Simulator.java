@@ -8,8 +8,9 @@ import java.awt.Color;
  * A Life (Game of Life) simulator, first described by British mathematician
  * John Horton Conway in 1970.
  *
- * @author David J. Barnes, Michael Kölling & Jeffery Raphael
- * @version 2022.01.06 (1)
+ * @author David J. Barnes, Michael Kölling & Jeffery Raphael, extended by
+ *         Harshraj Patel & Ishab Ahmed
+ * @version 2023.02.20
  */
 
 public class Simulator {
@@ -105,10 +106,10 @@ public class Simulator {
             // reset simulation
             if (view.getReset()) {
                 reset();
-                view.resetState();
+                view.resetBottomPane();
             }
             // delay to control speed of simulation
-            delay((int)(300*view.getDelayMultiplier()));
+            delay((int) (300 * view.getDelayMultiplier()));
         }
     }
 
@@ -211,12 +212,12 @@ public class Simulator {
             Isseria isse = new Isseria(field, location);
             isse.setDead();
             cells.add(isse);
-            // spawn dead Helicobacter in top right quadrant
+        // spawn dead Helicobacter in top right quadrant
         } else if (col >= DEFAULT_WIDTH / 2 && row <= DEFAULT_DEPTH / 2) {
             Helicobacter heli = new Helicobacter(field, location);
             heli.setDead();
             cells.add(heli);
-            // spawn dead Mycoplasma in bottom half
+        // spawn dead Mycoplasma in bottom half
         } else {
             Mycoplasma myco = new Mycoplasma(field, location);
             myco.setDead();

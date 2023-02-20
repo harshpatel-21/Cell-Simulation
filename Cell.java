@@ -3,14 +3,12 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-import javax.swing.plaf.ColorUIResource;
-
 /**
  * A class representing the shared characteristics of all forms of life
  *
  * @author David J. Barnes, Michael Kölling & Jeffery Raphael extended by
  *         Harshraj Patel & Ishab Ahmed
- * @version 2022.01.06 (1)
+ * @version 2023.02.20
  */
 
 public abstract class Cell {
@@ -31,10 +29,14 @@ public abstract class Cell {
 
 	private Color nextColor = color;
 
+	// default colour of cells
 	protected Color heliColour = new Color(200, 255, 255);
 	protected Color mycoColour = Color.ORANGE;
 	protected Color isseColour = Color.MAGENTA;
 	protected Color infectedColour = Color.RED;
+
+	// probability that a cell will get infected
+	private double infectRate = 0.1025;
 
 	/**
 	 * Create a new cell at location in field.
@@ -43,17 +45,17 @@ public abstract class Cell {
 	 * @param location The location within the field.
 	 */
 	public Cell(Field field, Location location, Color col) {
-		alive = true;
-		nextAlive = false;
 		this.field = field;
 
 		setLocation(location);
-		setInitialColor(col);
-	}
 
-	public void setInitialColor(Color col){
-		nextColor = col;
+		// set initial colour
 		color = col;
+		nextColor = col;
+
+		// set initial state
+		alive = true;
+		nextAlive = false;
 	}
 
 	/**
@@ -100,13 +102,20 @@ public abstract class Cell {
 		return nextAlive;
 	}
 
-	// /**
-	//  * Changes the color of the cell
-	//  */
-	// public void setColor(Color col) {
-	// 	color = col;
-	// }
+	/**
+	 * Changes the color of the cell
+	 * 
+	 * @param col The colour the cell should change to
+	 */
+	public void setColor(Color col) {
+		color = col;
+	}
 
+	/**
+	 * Sets the colour the cell should be in the next generation
+	 * 
+	 * @param col The colour the cell should change to
+	 */
 	public void setNextColor(Color col) {
 		nextColor = col;
 	}
@@ -153,19 +162,6 @@ public abstract class Cell {
 	protected void getEngulfedIfPossible() {
 		Random rand = Randomizer.getRandom();
 
-		// if the cell is not alive
-		if (!(isAlive())&&!(getColor().equals(heliColour))) {
-			// get the number of infected neighbours
-			int infectedNum = getLivingNeighboursByColour(infectedColour).size();
-
-			// if there are more than 3 infected neighbours,
-			// there is a probability for that cell to become infected
-			if (infectedNum > 3 && rand.nextDouble() < 0.11) {
-				setNextColor(infectedColour);
-				setNextState(true);
-			}
-		}
-
 		// if the cell is not a Helicobacter
 		if (!(getColor().equals(heliColour))) {
 			// get number of helicobacter neighbours
@@ -188,7 +184,8 @@ public abstract class Cell {
 	 * Changes the cell becomes a different cell when two different, neighbouring
 	 * cells collide
 	 */
-	protected void breedIfPossible() {};
+	protected void breedIfPossible() {
+	};
 
 	/**
 	 * @return whether the cell is a Heliobacter or not
@@ -208,8 +205,10 @@ public abstract class Cell {
 		// get all the infected neighbours
 		List<Cell> infectedNeighbours = getLivingNeighboursByColour(infectedColour);
 
-		// probability of infecting this cell
-		double infectRate = 0.1025;
+		// every generation, Helicobacter infection rate decreased by 0.1%
+		if (isHeli()) {
+			infectRate *= 0.999;
+		}
 
 		// if the cell is not infected
 		if (!getColor().equals(infectedColour)) {
@@ -222,6 +221,20 @@ public abstract class Cell {
 				}
 			}
 		}
+
+		// if the cell is not alive
+		if (!(isAlive()) && !(getColor().equals(heliColour))) {
+			// get the number of infected neighbours
+			int infectedNum = getLivingNeighboursByColour(infectedColour).size();
+
+			// if there are more than 3 infected neighbours,
+			// there is a probability for that cell to become infected
+			if (infectedNum > 3 && rand.nextDouble() < 0.11) {
+				setNextColor(infectedColour);
+				setNextState(true);
+			}
+		}
+
 	}
 
 	/**
@@ -236,13 +249,20 @@ public abstract class Cell {
 				.collect(Collectors.toList());
 	}
 
+	/**
+	 * Changes the colour of the Helicobacter cell based on the current generation
+	 * 
+	 * @param generation The current generation
+	 */
 	protected void darkenHeliColour(int generation) {
-		int r = (int) Math.max(200-(0.33*generation),52);
-		int g = (int) Math.max(255-(0.33*generation),126);
+		int r = (int) Math.max(200 - (0.1 * generation), 52);
+		int g = (int) Math.max(255 - (0.1 * generation), 126);
 		int b = 255;
-		
+
 		heliColour = new Color(r, g, b);
-		if (isHeli()) setNextColor(heliColour);
-}
+		// only change Helicobacter cell
+		if (isHeli())
+			setNextColor(heliColour);
+	}
 
 }

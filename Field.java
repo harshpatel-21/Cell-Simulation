@@ -173,27 +173,6 @@ public class Field {
         return neighbours;
     }
 
-    public List<Cell> getDeadNeighbours(Location location) {
-
-        assert location != null : "Null location passed to adjacentLocations";
-        List<Cell> neighbours = new LinkedList<>();
-
-        if (location != null) {
-            List<Location> adjLocations = adjacentLocations(location);
-
-            for (Location loc : adjLocations) {
-                Cell cell = field[loc.getRow()][loc.getCol()];
-                if (cell == null)
-                    continue;
-                // if (cell.isDead()) continue;
-                if (!cell.isAlive())
-                    neighbours.add(cell);
-            }
-            Collections.shuffle(neighbours, rand);
-        }
-        return neighbours;
-    }
-
     /**
      * Return the depth of the field.
      * 

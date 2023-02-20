@@ -10,7 +10,7 @@ import java.util.Random;
  *
  * @author David J. Barnes, Michael Kölling & Jeffery Raphael, extended by
  *         Harshraj Patel & Ishab Ahmed
- * @version 2022.01.06 (1)
+ * @version 2023.02.18
  */
 
 public class Mycoplasma extends Cell {
@@ -75,7 +75,7 @@ public class Mycoplasma extends Cell {
             // probability that the cells becomes infected
             if (rand.nextDouble() < 0.9) {
                 setNextColor(infectedColour);
-                // otherwise, make cell Isseria
+            // otherwise, make cell Isseria
             } else {
                 setNextColor(isseColour);
             }

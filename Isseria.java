@@ -1,5 +1,6 @@
 import java.awt.Color;
 import java.util.List;
+import java.util.Random;
 
 /**
  * @author Ishab Ahmed, Harshraj Patel
@@ -25,18 +26,22 @@ public class Isseria extends Cell {
      * This is how the Isseria decides if it's alive or not
      */
     public void act(int generation) {
+        Random rand = new Random();
 
         // get all the living neighbours of the same colour
         List<Cell> sameNeighbours = getLivingNeighboursByColour(getColor());
 
-        // if exactly 1 isseria neighbour, cell dies
-        if (sameNeighbours.size() == 1) {
-            setNextState(false);
-        // if exactly 3 isseria neighbours, cell is set alive
-        } else if (sameNeighbours.size() == 3) {
-            setNextState(true);
-        // if more than 3 isseria neighbours, cell dies due to overcrowding
-        } else if (sameNeighbours.size() > 3) {
+        // if exactly 2 neighbours, there is a chance that the cell is set alive
+        if (sameNeighbours.size() == 2) {
+            if (rand.nextDouble() < 0.6)
+                setNextState(true);
+        }
+        // if exactly 4 neighbours, there is a chance that the cell is set alive
+        else if (sameNeighbours.size() == 4) {
+            if (rand.nextDouble() < 0.5)
+                setNextState(true);
+        // if any other number of neighbours, cell dies or stays dead
+        } else {
             setNextState(false);
         }
     }
