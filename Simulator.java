@@ -95,21 +95,20 @@ public class Simulator {
      * @param numGenerations The number of generations to run for.
      */
     public void simulate(int numGenerations) {
+        view.enableBottomComponents();
         while (view.isViable(field)) {
 
             // simulate until generation limit reached while not paused
-            if (!view.getPause() && generation <= numGenerations) {
+            if (!view.getPause() && generation < numGenerations) {
                 simOneGeneration();
             }
-
             // reset simulation
             if (view.getReset()) {
                 reset();
                 view.resetState();
             }
-
             // delay to control speed of simulation
-            delay((int)(200*view.getDelayMultiplier()));
+            delay((int)(300*view.getDelayMultiplier()));
         }
     }
 

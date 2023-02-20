@@ -8,11 +8,12 @@ import javax.swing.event.*;
  * each location. Colors for each type of life form can be defined using the
  * setColor method.
  *
- * @author David J. Barnes, Michael Kölling & Jeffery Raphael
+ * @author David J. Barnes, Michael Kölling & Jeffery Raphael, Harshraj Patel &
+ *         Ishab Ahmed
  * @version 2022.01.06 (1)
  */
 
-public class SimulatorView extends JFrame implements ActionListener,ChangeListener {
+public class SimulatorView extends JFrame implements ActionListener, ChangeListener {
     // Colors used for empty locations.
     private static final Color EMPTY_COLOR = Color.white;
 
@@ -35,18 +36,19 @@ public class SimulatorView extends JFrame implements ActionListener,ChangeListen
     // A statistics object computing and storing simulation information
     private FieldStats stats;
 
-    JComboBox<String> speedBox;
     JSlider speedSlider;
     JButton pauseButton;
     JButton resetButton;
-    JPanel bottomPane;
 
     int sliderUpperBound = 100;
     int defaultSliderValue = 50;
     int currentSliderValue;
+
     boolean paused;
     boolean reset;
     double speedMultiplier;
+
+    private Container contents = getContentPane();
 
     /**
      * Create a view of the given width and height.
@@ -55,11 +57,12 @@ public class SimulatorView extends JFrame implements ActionListener,ChangeListen
      * @param width  The simulation's width.
      */
     public SimulatorView(int height, int width) {
+
         stats = new FieldStats();
 
         setTitle("Life Simulation");
         genLabel = new JLabel(GENERATION_PREFIX, JLabel.CENTER);
-        infoLabel = new JLabel("  ", JLabel.CENTER);
+        infoLabel = new JLabel(" ", JLabel.CENTER);
         population = new JLabel(POPULATION_PREFIX, JLabel.CENTER);
 
         Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
@@ -75,108 +78,77 @@ public class SimulatorView extends JFrame implements ActionListener,ChangeListen
 
         fieldView = new FieldView(height, width);
 
-        Container contents = getContentPane();
-        createBottomPane();
-
         JPanel infoPane = new JPanel(new BorderLayout());
-
         infoPane.add(genLabel, BorderLayout.WEST);
         infoPane.add(infoLabel, BorderLayout.CENTER);
 
+        JPanel bottomPane = createBottomPane();
+
+        // create a grid style layout for positioning main components of the GUI
         contents.setLayout(new GridBagLayout());
+        GridBagConstraints mainConstraints = new GridBagConstraints();
 
-        GridBagConstraints c = new GridBagConstraints();
+        // positionining the different components
+        mainConstraints.gridy = 0;
+        contents.add(infoPane, mainConstraints);
 
-        c.gridx = 0;
-        c.gridy = 0;
-        contents.add(infoPane, c);
-        c.gridx = 0;
-        c.gridy = 1;
-        contents.add(fieldView, c);
-        c.gridx = 0;
-        c.gridy = 2;
-        contents.add(population, c);
-        c.gridx = 0;
-        c.gridy = 3;
-        contents.add(bottomPane, c);
+        mainConstraints.gridy = 1;
+        contents.add(fieldView, mainConstraints);
+
+        mainConstraints.gridy = 2;
+        contents.add(population, mainConstraints);
+
+        mainConstraints.gridy = 3;
+        contents.add(bottomPane, mainConstraints);
+
+        // close the frame if the window is closed
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         pack();
         setVisible(true);
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == pauseButton) {
-            paused = !paused;
-            if (paused) {
-                pauseButton.setText("Resume");
-            } else {
-                pauseButton.setText("Pause");
-            }
-        } else if (e.getSource() == resetButton) {
-            reset = true;
-
-        }
-        // else if (e.getSource() == speedBox) {
-        //     speedMultiplier = Double.parseDouble(speedBox.getSelectedItem().toString());
-        // }
-    }
-
-    @Override
-    public void stateChanged(ChangeEvent e){    
-        if (e.getSource() == speedSlider) {
-            if (!speedSlider.getValueIsAdjusting()) {
-            currentSliderValue = speedSlider.getValue();
-            }
-        }
-    }
-
-    public boolean getPause() {
-        return paused;
-    }
-
-    public boolean getReset() {
-        return reset;
-    }
-
-    /**
-     * @return how far along the slider is.
-     */
-    public double getDelayMultiplier(){
-        return ((double)currentSliderValue/(double)sliderUpperBound); 
-    }
-
-    public void resetState() {
-        resetBottomPane();
+    public void enableBottomComponents() {
+        speedSlider.setEnabled(true);
+        pauseButton.setEnabled(true);
+        resetButton.setEnabled(true);
     }
 
     /**
      * creates the Bottom Panel along with the default values for it. Called when
-     * its created and when reeset.
+     * its created and when reset.
+     * 
+     * @return JPanel containing all the boxes in the bottom Pane
      */
-    public void createBottomPane() {
+    public JPanel createBottomPane() {
         // default values for the fields
         currentSliderValue = defaultSliderValue;
         paused = reset;
         reset = false;
 
         // the outer panel which will store our buttons
-        bottomPane = new JPanel();
+        JPanel bottomPane = new JPanel();
         bottomPane.setLayout(new GridBagLayout()); // using the GridBagLayout
 
         // create all the buttons and the speed selection slider
-        speedSlider = new JSlider(0, sliderUpperBound+1, currentSliderValue);
+        speedSlider = new JSlider(0, sliderUpperBound + 1, currentSliderValue);
         speedSlider.setMinorTickSpacing(5);
-        speedSlider.setSnapToTicks(true); 
+        speedSlider.setSnapToTicks(true);
         speedSlider.setPaintTicks(true);
         speedSlider.setInverted(true); // invert the scale. eg from 0-100 to 100-0
+        speedSlider.setEnabled(false);
 
         pauseButton = new JButton("Pause");
-        resetButton = new JButton("Reset");
+        pauseButton.setEnabled(false);
 
-        // create an innter panel to group Speed label Text and the Speed Selection Slider
+        resetButton = new JButton("Reset");
+        resetButton.setEnabled(false);
+
+        // create an innter panel to group Speed label Text and the Speed Selection
+        // Slider
         JPanel speedPanel = new JPanel(new GridBagLayout());
         JLabel speedLabel = new JLabel("Simulation Speed: ", JLabel.CENTER);
+
         GridBagConstraints speedConstraints = new GridBagConstraints();
 
         // create the constraints object used to position the buttons on the grid
@@ -185,13 +157,11 @@ public class SimulatorView extends JFrame implements ActionListener,ChangeListen
         gridConstraints.insets = new Insets(13, 0, 0, 0); // add 13px of vertical padding
 
         // add the speed panel (includes text and slider) to column 1
-        gridConstraints.gridx = 1;
         speedConstraints.gridx = 0;
         speedConstraints.gridy = 0;
         speedPanel.add(speedLabel, speedConstraints);
 
         speedConstraints.gridx = 1;
-        speedConstraints.gridy = 0;
         speedPanel.add(speedSlider, speedConstraints);
 
         bottomPane.add(speedPanel, gridConstraints);
@@ -208,16 +178,68 @@ public class SimulatorView extends JFrame implements ActionListener,ChangeListen
         pauseButton.addActionListener(this);
         resetButton.addActionListener(this);
         speedSlider.addChangeListener(this);
+
+        return bottomPane;
     }
 
+    /**
+     * reset the fields that are used to determine the state of the simulation
+     * to their default values
+     */
     public void resetBottomPane() {
         paused = true;
         reset = false;
         currentSliderValue = defaultSliderValue;
-
         pauseButton.setText("Start");
-        // speedBox.setSelectedIndex(2); // default speed is at index 1, which is the multiplier 1
         speedSlider.setValue(currentSliderValue);
+    }
+
+    /**
+     * Listen for button presses
+     */
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == pauseButton) {
+            paused = !paused; // toggle pause state
+
+            // display appropriate text depending on pause state
+            if (paused) {
+                pauseButton.setText("Resume");
+            } else {
+                pauseButton.setText("Pause");
+            }
+        } else if (e.getSource() == resetButton) {
+            // set reset to true, and
+            reset = true;
+        }
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        if (e.getSource() == speedSlider) {
+            if (!speedSlider.getValueIsAdjusting()) {
+                currentSliderValue = speedSlider.getValue();
+            }
+        }
+    }
+
+    public boolean getPause() {
+        return paused;
+    }
+
+    public boolean getReset() {
+        return reset;
+    }
+
+    /**
+     * @return how far along the slider is.
+     */
+    public double getDelayMultiplier() {
+        return ((double) currentSliderValue / (double) sliderUpperBound);
+    }
+
+    public void resetState() {
+        resetBottomPane();
     }
 
     /**

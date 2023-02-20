@@ -154,7 +154,7 @@ public abstract class Cell {
 		Random rand = Randomizer.getRandom();
 
 		// if the cell is not alive
-		if (!(isAlive())) {
+		if (!(isAlive())&&!(getColor().equals(heliColour))) {
 			// get the number of infected neighbours
 			int infectedNum = getLivingNeighboursByColour(infectedColour).size();
 
@@ -237,8 +237,8 @@ public abstract class Cell {
 	}
 
 	protected void darkenHeliColour(int generation) {
-		int r = (int) Math.max(200-(0.4*generation),52);
-		int g = (int) Math.max(255-(0.4*generation),126);
+		int r = (int) Math.max(200-(0.33*generation),52);
+		int g = (int) Math.max(255-(0.33*generation),126);
 		int b = 255;
 		
 		heliColour = new Color(r, g, b);
