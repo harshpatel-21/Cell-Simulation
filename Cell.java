@@ -42,7 +42,7 @@ public abstract class Cell {
 	 * Create a new cell at location in field.
 	 *
 	 * @param field    The field currently occupied.
-	 * @param location The location within the field.
+	 * @param location The location within the field. 
 	 */
 	public Cell(Field field, Location location, Color col) {
 		this.field = field;

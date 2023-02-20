@@ -171,7 +171,8 @@ public class SimulatorView extends JFrame implements ActionListener, ChangeListe
         // create the constraints object used to position the buttons on the grid
         GridBagConstraints gridConstraints = new GridBagConstraints();
         gridConstraints.fill = GridBagConstraints.NONE;
-        gridConstraints.insets = new Insets(13, 0, 0, 0); // add vertical padding
+        gridConstraints.insets = new Insets(13, 5, 0, 5); // add padding
+
 
         // add components to speed pane horizontally
         speedPane.add(speedLabel, speedConstraints);

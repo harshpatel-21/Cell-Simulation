@@ -99,7 +99,8 @@ public class Simulator {
         view.enableBottomComponents();
         while (view.isViable(field)) {
 
-            // simulate until generation limit reached while not paused
+            // simulate while the simulator is not paused and the generation limit has not
+            // been reached
             if (!view.getPause() && generation < numGenerations) {
                 simOneGeneration();
             }
@@ -212,12 +213,12 @@ public class Simulator {
             Isseria isse = new Isseria(field, location);
             isse.setDead();
             cells.add(isse);
-        // spawn dead Helicobacter in top right quadrant
+            // spawn dead Helicobacter in top right quadrant
         } else if (col >= DEFAULT_WIDTH / 2 && row <= DEFAULT_DEPTH / 2) {
             Helicobacter heli = new Helicobacter(field, location);
             heli.setDead();
             cells.add(heli);
-        // spawn dead Mycoplasma in bottom half
+            // spawn dead Mycoplasma in bottom half
         } else {
             Mycoplasma myco = new Mycoplasma(field, location);
             myco.setDead();
