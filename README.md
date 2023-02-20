@@ -8,7 +8,7 @@
 
 **1. The base code comes with a simple life form, the Mycoplasma. Your first task is to make it more interesting. Modify its rule set so that [it follows Game of Life rules]**.
 
-![image-20230220171203139](/Users/ishab/Library/Application Support/typora-user-images/image-20230220171203139.png)
+![Base Task 1 Proof](https://i.imgur.com/49XsBbo.png/)
 
 **2. Using the Mycoplasma as an example, develop at least two new forms of life. Their rule set should be different from the Mycoplasma.**
 
