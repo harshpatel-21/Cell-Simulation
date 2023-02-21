@@ -2,6 +2,11 @@ import java.awt.Color;
 import java.util.List;
 
 /**
+ * Represents a distinct type of bacteria.
+ * Fun Fact: The name comes from the Helicobacter pylori bacterium. The bacterium 
+ * is the most widespread infection in the world, with at least half of the world's
+ * population being infected by it.
+ * 
  * @author Ishab Ahmed, Harshraj Patel
  * @version 2023.02.07
  */
@@ -18,12 +23,13 @@ public class Helicobacter extends Cell {
     }
 
     public Helicobacter(Field field, Location location) {
-        super(field, location, new Color(200,255,255));
+        super(field, location, new Color(200, 255, 255));
     }
 
     /**
      * This is how the Helicobacter decides if it's alive or not
      */
+    @Override
     public void act(int generation) {
         // get all the living neighbours of the same colour
         List<Cell> sameNeighbours = getLivingNeighboursByColour(getColor());
@@ -32,14 +38,14 @@ public class Helicobacter extends Cell {
         if (!isAlive() && sameNeighbours.size() == 3) {
             setNextState(true);
         }
-        
+
         // if exactly 1 helicobacter neighbour, cell dies
         if (sameNeighbours.size() == 1) {
             setNextState(false);
-        // if exactly 3 helicobacter neighbours, cell is set alive
+            // if exactly 3 helicobacter neighbours, cell is set alive
         } else if (sameNeighbours.size() == 3) {
             setNextState(true);
-        // if more than 3 helicobacter neighbours, cell dies due to overcrowding
+            // if more than 3 helicobacter neighbours, cell dies due to overcrowding
         } else if (sameNeighbours.size() > 3) {
             setNextState(false);
         }

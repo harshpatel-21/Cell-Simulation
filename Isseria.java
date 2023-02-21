@@ -3,6 +3,11 @@ import java.util.List;
 import java.util.Random;
 
 /**
+ * Represents a distinct type of bacterium.
+ * Fun Fact: The name was inspired by a genus of bacteria called Neisseria.
+ * Among the eleven species of Neisseria that colonise humans, only two are 
+ * classified as pathogens.
+ * 
  * @author Ishab Ahmed, Harshraj Patel
  * @version 2023.02.07
  */
@@ -25,6 +30,7 @@ public class Isseria extends Cell {
     /**
      * This is how the Isseria decides if it's alive or not
      */
+    @Override
     public void act(int generation) {
         Random rand = new Random();
 
@@ -40,8 +46,8 @@ public class Isseria extends Cell {
         else if (sameNeighbours.size() == 4) {
             if (rand.nextDouble() < 0.5)
                 setNextState(true);
-        // if any other number of neighbours, cell dies or stays dead
         } else {
+            // if any other number of neighbours, cell dies or stays dead
             setNextState(false);
         }
     }

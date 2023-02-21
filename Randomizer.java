@@ -12,7 +12,7 @@ import java.util.Random;
 
 public class Randomizer {
     // The default seed for control of randomization.
-    private static final int SEED = 1111;
+    private static final int SEED = 1122;
 
     // A shared Random object, if required.
     private static final Random rand = new Random(SEED);
@@ -22,13 +22,13 @@ public class Randomizer {
 
     /**
      * Provide a random generator.
+     * 
      * @return A random object.
      */
     public static Random getRandom() {
         if (useShared) {
             return rand;
-        }
-        else {
+        } else {
             return new Random();
         }
     }

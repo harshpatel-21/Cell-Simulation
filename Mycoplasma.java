@@ -32,6 +32,7 @@ public class Mycoplasma extends Cell {
     /**
      * This is how the Mycoplasma decides if it's alive or not
      */
+    @Override
     public void act(int generation) {
         // get all the living neighbours of the same colour
         List<Cell> sameNeighbours = getLivingNeighboursByColour(getColor());
@@ -46,8 +47,8 @@ public class Mycoplasma extends Cell {
                 // if the cell is infected, there is a probability that is set alive
                 if (getColor().equals(infectedColour) && rand.nextDouble() < Math.max(10 / generation, 0.08)) {
                     setNextState(true);
-                // otherwise cell dies
                 } else
+                    // otherwise cell dies
                     setNextState(false);
             }
         }
@@ -75,8 +76,8 @@ public class Mycoplasma extends Cell {
             // probability that the cells becomes infected
             if (rand.nextDouble() < 0.9) {
                 setNextColor(infectedColour);
-            // otherwise, make cell Isseria
             } else {
+                // otherwise, make cell Isseria
                 setNextColor(isseColour);
             }
             setNextState(true);

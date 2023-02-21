@@ -99,8 +99,8 @@ public class Simulator {
         view.enableBottomComponents();
         while (view.isViable(field)) {
 
-            // simulate while the simulator is not paused and the generation limit has not
-            // been reached
+            // simulate while the simulator is not paused and the
+            // generation limit has not been reached
             if (!view.getPause() && generation < numGenerations) {
                 simOneGeneration();
             }

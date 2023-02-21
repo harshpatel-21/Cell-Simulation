@@ -38,7 +38,7 @@ public class SimulatorView extends JFrame implements ActionListener, ChangeListe
 
     // components on the bottom pane
     JSlider speedSlider; // changes hpw fast the simulation run
-    JButton pauseButton; // button to pause/resume simulation
+    JButton toggleButton; // button to toggle simulation on/off
     JButton resetButton; // button to reset simulation
 
     // simulation speed slider values
@@ -120,7 +120,7 @@ public class SimulatorView extends JFrame implements ActionListener, ChangeListe
      */
     public void enableBottomComponents() {
         speedSlider.setEnabled(true);
-        pauseButton.setEnabled(true);
+        toggleButton.setEnabled(true);
         resetButton.setEnabled(true);
 
         contents.remove(instructionLabel);
@@ -153,13 +153,13 @@ public class SimulatorView extends JFrame implements ActionListener, ChangeListe
         speedSlider.setPaintTicks(true);
         speedSlider.setInverted(true); // invert the scale. eg from 0-100 to 100-0
 
-        pauseButton = new JButton("Pause");
+        toggleButton = new JButton("Pause");
 
         resetButton = new JButton("Reset");
 
         // disable all components (to only be interactable when simulate is called)
         speedSlider.setEnabled(false);
-        pauseButton.setEnabled(false);
+        toggleButton.setEnabled(false);
         resetButton.setEnabled(false);
 
         // pane used to contain both the slider component and accompanying label
@@ -173,7 +173,6 @@ public class SimulatorView extends JFrame implements ActionListener, ChangeListe
         gridConstraints.fill = GridBagConstraints.NONE;
         gridConstraints.insets = new Insets(13, 5, 0, 5); // add padding
 
-
         // add components to speed pane horizontally
         speedPane.add(speedLabel, speedConstraints);
         speedConstraints.gridx = 1;
@@ -183,13 +182,13 @@ public class SimulatorView extends JFrame implements ActionListener, ChangeListe
         bottomPane.add(speedPane, gridConstraints);
 
         gridConstraints.gridx = 1;
-        bottomPane.add(pauseButton, gridConstraints);
+        bottomPane.add(toggleButton, gridConstraints);
 
         gridConstraints.gridx = 2;
         bottomPane.add(resetButton, gridConstraints);
 
         // add listeners for when the buttons are clicked
-        pauseButton.addActionListener(this);
+        toggleButton.addActionListener(this);
         resetButton.addActionListener(this);
         speedSlider.addChangeListener(this);
 
@@ -201,7 +200,7 @@ public class SimulatorView extends JFrame implements ActionListener, ChangeListe
      */
     public void resetBottomPane() {
         paused = true;
-        pauseButton.setText("Start");
+        toggleButton.setText("Start");
 
         reset = false;
 
@@ -216,13 +215,13 @@ public class SimulatorView extends JFrame implements ActionListener, ChangeListe
      */
     @Override
     public void actionPerformed(ActionEvent event) {
-        if (event.getSource() == pauseButton) {
+        if (event.getSource() == toggleButton) {
             paused = !paused; // toggle pause state
             // display appropriate text depending on pause state
             if (paused) {
-                pauseButton.setText("Resume");
+                toggleButton.setText("Resume");
             } else {
-                pauseButton.setText("Pause");
+                toggleButton.setText("Pause");
             }
         } else if (event.getSource() == resetButton) {
             reset = true;
