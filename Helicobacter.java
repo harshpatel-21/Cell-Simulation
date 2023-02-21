@@ -23,7 +23,7 @@ public class Helicobacter extends Cell {
     }
 
     public Helicobacter(Field field, Location location) {
-        super(field, location, new Color(200, 255, 255));
+        this(field, location, new Color(200, 255, 255));
     }
 
     /**

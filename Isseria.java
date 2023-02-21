@@ -24,7 +24,7 @@ public class Isseria extends Cell {
     }
 
     public Isseria(Field field, Location location) {
-        super(field, location, Color.MAGENTA);
+        this(field, location, Color.MAGENTA);
     }
 
     /**

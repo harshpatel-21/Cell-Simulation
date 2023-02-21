@@ -13,7 +13,7 @@ import javax.swing.event.*;
  * @version 2023.02.20
  */
 
-public class SimulatorView extends JFrame implements ActionListener, ChangeListener {
+public class SimulatorView extends JFrame implements ActionListener {
     // Colors used for empty locations.
     private static final Color EMPTY_COLOR = Color.white;
 
@@ -38,7 +38,7 @@ public class SimulatorView extends JFrame implements ActionListener, ChangeListe
 
     // components on the bottom pane
     JSlider speedSlider; // changes hpw fast the simulation run
-    JButton toggleButton; // button to toggle simulation on/off
+    JButton pauseButton; // button to pause/resume simulation
     JButton resetButton; // button to reset simulation
 
     // simulation speed slider values
@@ -118,16 +118,18 @@ public class SimulatorView extends JFrame implements ActionListener, ChangeListe
     /**
      * Enable components in order to make them interactable.
      */
-    public void enableBottomComponents() {
-        speedSlider.setEnabled(true);
-        toggleButton.setEnabled(true);
-        resetButton.setEnabled(true);
+    public void toggleBottomComponents(boolean val) {
+        speedSlider.setEnabled(val);
+        pauseButton.setEnabled(val);
+        resetButton.setEnabled(val);
 
-        contents.remove(instructionLabel);
-        // used to update the scene graph with the above removal
-        contents.validate();
-        // redraw the Container with the instruction label removed
-        contents.repaint();
+        if (val==true){
+            contents.remove(instructionLabel);
+            // used to update the scene graph with the above removal
+            contents.validate();
+            // redraw the Container with the instruction label removed
+            contents.repaint();
+        }
     }
 
     /**
@@ -148,19 +150,17 @@ public class SimulatorView extends JFrame implements ActionListener, ChangeListe
 
         // create all the buttons and the speed selection slider
         speedSlider = new JSlider(0, sliderUpperBound, currentSliderValue);
-        speedSlider.setMinorTickSpacing(5);
+        speedSlider.setMinorTickSpacing(10);
         speedSlider.setSnapToTicks(true);
         speedSlider.setPaintTicks(true);
         speedSlider.setInverted(true); // invert the scale. eg from 0-100 to 100-0
 
-        toggleButton = new JButton("Pause");
+        pauseButton = new JButton("Pause");
 
         resetButton = new JButton("Reset");
 
         // disable all components (to only be interactable when simulate is called)
-        speedSlider.setEnabled(false);
-        toggleButton.setEnabled(false);
-        resetButton.setEnabled(false);
+        toggleBottomComponents(false);
 
         // pane used to contain both the slider component and accompanying label
         JLabel speedLabel = new JLabel("Simulation Speed: ", JLabel.CENTER);
@@ -173,6 +173,7 @@ public class SimulatorView extends JFrame implements ActionListener, ChangeListe
         gridConstraints.fill = GridBagConstraints.NONE;
         gridConstraints.insets = new Insets(13, 5, 0, 5); // add padding
 
+
         // add components to speed pane horizontally
         speedPane.add(speedLabel, speedConstraints);
         speedConstraints.gridx = 1;
@@ -182,15 +183,15 @@ public class SimulatorView extends JFrame implements ActionListener, ChangeListe
         bottomPane.add(speedPane, gridConstraints);
 
         gridConstraints.gridx = 1;
-        bottomPane.add(toggleButton, gridConstraints);
+        bottomPane.add(pauseButton, gridConstraints);
 
         gridConstraints.gridx = 2;
         bottomPane.add(resetButton, gridConstraints);
 
         // add listeners for when the buttons are clicked
-        toggleButton.addActionListener(this);
+        pauseButton.addActionListener(this);
         resetButton.addActionListener(this);
-        speedSlider.addChangeListener(this);
+        // speedSlider.addChangeListener(this);
 
         return bottomPane;
     }
@@ -200,7 +201,7 @@ public class SimulatorView extends JFrame implements ActionListener, ChangeListe
      */
     public void resetBottomPane() {
         paused = true;
-        toggleButton.setText("Start");
+        pauseButton.setText("Start");
 
         reset = false;
 
@@ -215,32 +216,32 @@ public class SimulatorView extends JFrame implements ActionListener, ChangeListe
      */
     @Override
     public void actionPerformed(ActionEvent event) {
-        if (event.getSource() == toggleButton) {
+        if (event.getSource() == pauseButton) {
             paused = !paused; // toggle pause state
             // display appropriate text depending on pause state
             if (paused) {
-                toggleButton.setText("Resume");
+                pauseButton.setText("Resume");
             } else {
-                toggleButton.setText("Pause");
+                pauseButton.setText("Pause");
             }
         } else if (event.getSource() == resetButton) {
             reset = true;
         }
     }
 
-    /**
-     * If slider is moved, update the internal value
-     * 
-     * @param event the event that ocurred
-     */
-    @Override
-    public void stateChanged(ChangeEvent event) {
-        if (event.getSource() == speedSlider) {
-            if (!speedSlider.getValueIsAdjusting()) {
-                currentSliderValue = speedSlider.getValue();
-            }
-        }
-    }
+    // /**
+    //  * If slider is moved, update the internal value
+    //  * 
+    //  * @param event the event that ocurred
+    //  */
+    // @Override
+    // public void stateChanged(ChangeEvent event) {
+    //     if (event.getSource() == speedSlider) {
+    //         if (!speedSlider.getValueIsAdjusting()) {
+    //             currentSliderValue = speedSlider.getValue();
+    //         }
+    //     }
+    // }
 
     /**
      * @return whether the simulation is paused or not
@@ -264,12 +265,21 @@ public class SimulatorView extends JFrame implements ActionListener, ChangeListe
     }
 
     /**
+     * check for slider value every time and update it
+     */
+    public void updateSliderValue(){
+        currentSliderValue = speedSlider.getValue();
+    }
+
+    /**
      * Show the current status of the field.
      * 
      * @param generation The current generation.
      * @param field      The field whose status is to be displayed.
      */
     public void showStatus(int generation, Field field) {
+        updateSliderValue();
+        
         if (!isVisible()) {
             setVisible(true);
         }

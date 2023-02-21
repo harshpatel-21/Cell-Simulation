@@ -15,10 +15,10 @@ import java.awt.Color;
 
 public class Simulator {
     // The default width for the grid.
-    private static final int DEFAULT_WIDTH = 140;
+    private static final int DEFAULT_WIDTH = 160;
 
     // The default depth of the grid.
-    private static final int DEFAULT_DEPTH = 110;
+    private static final int DEFAULT_DEPTH = 130;
 
     // The probability that a Mycoplasma is alive
     private static final double MYCOPLASMA_ALIVE_PROB = 0.2;
@@ -96,11 +96,12 @@ public class Simulator {
      * @param numGenerations The number of generations to run for.
      */
     public void simulate(int numGenerations) {
-        view.enableBottomComponents();
+        view.toggleBottomComponents(true); // allow the bottom components to be interactable
+
         while (view.isViable(field)) {
 
-            // simulate while the simulator is not paused and the
-            // generation limit has not been reached
+            // simulate while the simulator is not paused and the generation limit has not
+            // been reached
             if (!view.getPause() && generation < numGenerations) {
                 simOneGeneration();
             }
