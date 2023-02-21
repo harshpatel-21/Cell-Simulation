@@ -15,10 +15,10 @@ import java.awt.Color;
 
 public class Simulator {
     // The default width for the grid.
-    private static final int DEFAULT_WIDTH = 160;
+    private static final int DEFAULT_WIDTH = 140;
 
     // The default depth of the grid.
-    private static final int DEFAULT_DEPTH = 130;
+    private static final int DEFAULT_DEPTH = 110;
 
     // The probability that a Mycoplasma is alive
     private static final double MYCOPLASMA_ALIVE_PROB = 0.2;
