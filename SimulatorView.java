@@ -37,7 +37,7 @@ public class SimulatorView extends JFrame implements ActionListener {
     private FieldStats stats;
 
     // components on the bottom pane
-    JSlider speedSlider; // changes hpw fast the simulation run
+    JSlider speedSlider; // changes how fast the simulation run
     JButton pauseButton; // button to pause/resume simulation
     JButton resetButton; // button to reset simulation
 
