@@ -101,28 +101,42 @@ public class Simulator {
         while (view.isViable(field)) {
             // simulate while the simulator is not paused and the generation limit has not
             // been reached
-            if (!view.getPause()) {
+            if (!view.getPause() && generation < numGenerations) {
                 simOneGeneration();
+                // delay to control the speed of the simulation
                 delay((int) (350 * view.getDelayMultiplier()));
             }
+            
             // reset simulation
             if (view.getReset()) {
                 reset();
                 view.resetBottomPane();
             }
 
-            if (view.getMouseClicked() && view.getPause()){
+            // check to see if a cell is to be added onto the grid if the view is paused.
+            if (view.getIsMouseBeingPressed() && view.getPause()){
                 Location gridCoords = view.getMouseCoords();
-                addObject(gridCoords);
+                addCellIfPossible(gridCoords);
             }
-            // delay to control speed of simulation
+
             
         }
     }
 
-    public void addObject(Location location){
+    /**
+     * add a cell in a given location
+     * @param location
+     */
+    public void addCellIfPossible(Location location){
         Species speciesSelected = view.getSpeciesSelected();
         Cell cellToAdd = null;
+
+        // dont continue if no species was selected
+        if (speciesSelected == null){
+            return;
+        }
+
+        // create the appropriate cell depending on the selected species 
         switch (speciesSelected){
             case HELICOBACTER:
                 cellToAdd = new Helicobacter(field, location);
@@ -146,11 +160,16 @@ public class Simulator {
                 break;
         }
 
-        if (cellToAdd != null){
-            field.place(cellToAdd, location);
-            cells.add(cellToAdd);
-            view.showStatus(generation, field);
+        // if the class of the selected species exists, add the cell
+        if (cellToAdd == null){
+            return;
         }
+        field.place(cellToAdd, location);
+        cells.add(cellToAdd);
+        
+        // update field
+        view.showStatus(generation, field);
+    
     }
 
     /**

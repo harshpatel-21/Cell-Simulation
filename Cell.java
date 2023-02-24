@@ -185,6 +185,11 @@ public abstract class Cell {
         return null;
     }
 
+    /**
+     * set the species of a cell in the current and next generation
+     * used mainly when adding new cell using mouse
+     * @param species
+     */
     protected void setSpecies(Species species){
         cellSpecies = species;
         nextCellSpecies = species;

@@ -20,7 +20,7 @@ import java.util.List;
 
 public class SimulatorView extends JFrame implements ActionListener {
     private int[] mouseCoords = new int[2];
-    private boolean mouseClicked = false;
+    private boolean isMouseBeingPressed = false;
 
     // Colors used for empty locations.
     private static final Color EMPTY_COLOR = Color.white;
@@ -50,10 +50,10 @@ public class SimulatorView extends JFrame implements ActionListener {
     private JSlider speedSlider; // changes how fast the simulation run
     private JButton pauseButton; // button to pause/resume simulation
     private JButton resetButton; // button to reset simulation
-    
+
     // ComboBox which will allow the seleciton of species
     Species[] speciesNames = Species.class.getEnumConstants();
-    private JComboBox<Species> speciesSelector = new JComboBox<Species>(speciesNames);
+    private JComboBox<Species> speciesSelector;
     private Species speciesSelected;
 
     // simulation speed slider values
@@ -65,7 +65,7 @@ public class SimulatorView extends JFrame implements ActionListener {
     private boolean paused;
     private boolean reset;
 
-
+    // container which whill store components in the running JFrame
     private Container contents = getContentPane();
 
     /**
@@ -83,12 +83,10 @@ public class SimulatorView extends JFrame implements ActionListener {
         infoLabel = new JLabel(" ", JLabel.CENTER);
         population = new JLabel(POPULATION_PREFIX, JLabel.CENTER);
 
+        // centre the window
         Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
-
         int screen_width = (int) size.getWidth();
         int screen_height = (int) size.getHeight();
-
-        // centre the window
         setLocation((int) (screen_width * 0.5 - (width * 3)), (int) (screen_height * 0.5 - (height * 3)));
 
         fieldView = new FieldView(height, width);
@@ -98,7 +96,8 @@ public class SimulatorView extends JFrame implements ActionListener {
         infoPane.add(infoLabel, BorderLayout.CENTER);
 
         debugPane = createDebugPane();
-        // disable all components (to only be interactable when simulate is called)
+        // disable all debug components (to only be interactable when simulate is
+        // called)
         toggleDebugComponents(false);
 
         // create a grid style layout for positioning main components of the GUI
@@ -118,25 +117,31 @@ public class SimulatorView extends JFrame implements ActionListener {
         mainConstraints.gridy = 3;
         contents.add(debugPane, mainConstraints);
 
-        // Add instruction Label + Species selector box
-        JPanel instructionPane = new JPanel(new GridBagLayout());
-        GridBagConstraints instConstraints = new GridBagConstraints();
-        instConstraints.insets = new Insets(5, 0, 5, 10);
+        // Add instruction Label and Species selector box
+        JPanel bottomPane = new JPanel(new GridBagLayout());
+        GridBagConstraints bottomConstraints = new GridBagConstraints();
+        bottomConstraints.insets = new Insets(5, 0, 5, 10); // padding
 
+        // default text if a generation number has not been specified
         instructionLabel = new JLabel("You need to start a simulation with a specified number of generations!");
 
-        instConstraints.gridx = 0;
-        instConstraints.gridy = 0;
-        instructionPane.add(instructionLabel,instConstraints);
+        // position the components horizontolly
+        bottomConstraints.gridx = 0;
+        bottomPane.add(instructionLabel, bottomConstraints);
 
-        instConstraints.gridx = 1;
-        instConstraints.gridy = 0;
-        instructionPane.add(speciesSelector,instConstraints);
-
-        mainConstraints.gridy = 4;
-        contents.add(instructionPane, mainConstraints);
-
+        // create the species selector and add it next to instruction label
+        bottomConstraints.gridx = 1;
+        speciesSelector = new JComboBox<Species>(speciesNames);
+        speciesSelected = (Species) speciesSelector.getSelectedItem();
+        // disable species selection by default (to only be interactable when simulate
+        // is called)
+        speciesSelector.setEnabled(false);
         speciesSelector.addActionListener(this);
+        bottomPane.add(speciesSelector, bottomConstraints);
+
+        // add bottomPane at the end
+        mainConstraints.gridy = 4;
+        contents.add(bottomPane, mainConstraints);
 
         // close the frame if the window is closed
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -145,24 +150,24 @@ public class SimulatorView extends JFrame implements ActionListener {
         setVisible(true);
     }
 
-    public boolean getMouseClicked(){
-        return mouseClicked;
+    /**
+     * 
+     * @return whether the mouse button is being pressed
+     */
+    public boolean getIsMouseBeingPressed() {
+        return isMouseBeingPressed;
     }
 
-    public Location getMouseCoords(){
+    public Location getMouseCoords() {
         int x = mouseCoords[0];
         int y = mouseCoords[1];
-        int gridx = (int) (x/fieldView.getViewScalingFactor());
-        int gridy = (int) (y/fieldView.getViewScalingFactor());
+        int gridx = (int) (x / fieldView.getViewScalingFactor());
+        int gridy = (int) (y / fieldView.getViewScalingFactor());
 
         gridx = Math.max(Math.min(gridx, fieldView.gridWidth - 1), 0);
         gridy = Math.max(Math.min(gridy, fieldView.gridHeight - 1), 0);
 
         return new Location(gridy, gridx);
-    }
-
-    public void setMouseClicked(boolean val){
-        mouseClicked = val;
     }
 
     /**
@@ -173,8 +178,10 @@ public class SimulatorView extends JFrame implements ActionListener {
         pauseButton.setEnabled(val);
         resetButton.setEnabled(val);
 
-        if (val==true){
+        // if the bottom components are to be enabled, also enable species selection
+        if (val == true) {
             instructionLabel.setText("You can pause the simulation and drag mouse to add a cell!");
+            speciesSelector.setEnabled(true);
         }
     }
 
@@ -215,7 +222,6 @@ public class SimulatorView extends JFrame implements ActionListener {
         GridBagConstraints gridConstraints = new GridBagConstraints();
         gridConstraints.fill = GridBagConstraints.NONE;
         gridConstraints.insets = new Insets(5, 5, 0, 5); // add padding
-
 
         // add components to speed pane horizontally
         speedPane.add(speedLabel, speedConstraints);
@@ -270,16 +276,15 @@ public class SimulatorView extends JFrame implements ActionListener {
             }
         } else if (event.getSource() == resetButton) {
             reset = true;
-        } else if(event.getSource() == speciesSelector){
-            // convert 
+        } else if (event.getSource() == speciesSelector) {
+            // convert
             speciesSelected = (Species) speciesSelector.getSelectedItem();
         }
     }
 
-    public Species getSpeciesSelected(){
+    public Species getSpeciesSelected() {
         return speciesSelected;
     }
-
 
     /**
      * @return whether the simulation is paused or not
@@ -305,7 +310,7 @@ public class SimulatorView extends JFrame implements ActionListener {
     /**
      * check for slider value every time and update it
      */
-    public void updateSliderValue(){
+    public void updateSliderValue() {
         currentSliderValue = speedSlider.getValue();
     }
 
@@ -317,7 +322,7 @@ public class SimulatorView extends JFrame implements ActionListener {
      */
     public void showStatus(int generation, Field field) {
         updateSliderValue();
-        
+
         if (!isVisible()) {
             setVisible(true);
         }
@@ -369,26 +374,40 @@ public class SimulatorView extends JFrame implements ActionListener {
         private Graphics g;
         private Image fieldImage;
 
-        public int getViewScalingFactor(){
+        /**
+         * 
+         * @return the size of the tile
+         */
+        public int getViewScalingFactor() {
             return GRID_VIEW_SCALING_FACTOR;
         }
 
-        public void updateMouseCoords(MouseEvent e){
+        /*
+         * update the mouse coords
+         */
+        public void updateMouseCoords(MouseEvent e) {
             mouseCoords[0] = e.getX();
             mouseCoords[1] = e.getY();
         }
 
+        /**
+         * Dont do anything if the mouse is moving without being pressed
+         */
         @Override
         public void mouseMoved(MouseEvent event) {
-            updateMouseCoords(event);
         }
 
+        /**
+         * If the mouse is pressed and moved, update mouse coordinates and set pressed
+         * flag to true
+         */
         @Override
         public void mouseDragged(MouseEvent event) {
             // Handle mouse dragging events if needed
-            setMouseClicked(true);
+            isMouseBeingPressed = true;
             updateMouseCoords(event);
         }
+
         /**
          * Create a new FieldView component.
          */
@@ -396,24 +415,33 @@ public class SimulatorView extends JFrame implements ActionListener {
             gridHeight = height;
             gridWidth = width;
             size = new Dimension(0, 0);
+
+            // add motion listener for when mouse is clicked and dragged
             addMouseMotionListener(this);
+
+            // add normal listener for when it is simply clicked
             this.addMouseListener(new MouseAdapter() {
-                // provides empty implementation of all MouseListener`s methods, allowing us to
-                @Override 
+
+                /**
+                 * set the mouse press flag to true once its been released and update the
+                 * coordinates of where it was pressed
+                 */
+                @Override
                 public void mousePressed(MouseEvent event) {
                     updateMouseCoords(event);
-                    setMouseClicked(true);
+                    isMouseBeingPressed = true;
                 }
-    
+
+                /**
+                 * set the mouse press flag to false once its been released
+                 */
                 @Override
-                public void mouseReleased(MouseEvent e){
-                    setMouseClicked(false);
+                public void mouseReleased(MouseEvent e) {
+                    isMouseBeingPressed = false;
                 }
-                }
-            );
+            });
         }
 
-        @Override
 
         /**
          * Tell the GUI manager how big we would like to be.
