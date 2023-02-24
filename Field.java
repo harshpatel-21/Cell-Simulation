@@ -64,7 +64,7 @@ public class Field {
     public void place(Cell cell, int row, int col) {
         place(cell, new Location(row, col));
     }
-
+    
     /**
      * Place a cell at the given location.
      * If there is already a cell at the location it will be lost.

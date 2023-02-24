@@ -3,6 +3,11 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
 
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * A graphical view of the simulation grid. The view displays a rectangle for
  * each location. Colors for each type of life form can be defined using the
@@ -14,6 +19,9 @@ import javax.swing.event.*;
  */
 
 public class SimulatorView extends JFrame implements ActionListener {
+    private int[] mouseCoords = new int[2];
+    private boolean mouseClicked = false;
+
     // Colors used for empty locations.
     private static final Color EMPTY_COLOR = Color.white;
 
@@ -36,21 +44,27 @@ public class SimulatorView extends JFrame implements ActionListener {
     // A statistics object computing and storing simulation information
     private FieldStats stats;
 
-    // components on the bottom pane
-    JSlider speedSlider; // changes how fast the simulation run
-    JButton pauseButton; // button to pause/resume simulation
-    JButton resetButton; // button to reset simulation
+    private JPanel debugPane;
+
+    // components on the debugging pane
+    private JSlider speedSlider; // changes how fast the simulation run
+    private JButton pauseButton; // button to pause/resume simulation
+    private JButton resetButton; // button to reset simulation
+    
+    // ComboBox which will allow the seleciton of species
+    Species[] speciesNames = Species.class.getEnumConstants();
+    private JComboBox<Species> speciesSelector = new JComboBox<Species>(speciesNames);
+    private Species speciesSelected;
 
     // simulation speed slider values
-    int sliderUpperBound = 100;
-    int defaultSliderValue = sliderUpperBound / 2;
-    int currentSliderValue;
-
-    double speedMultiplier; // speed of simulation
+    private int sliderUpperBound = 100;
+    private int defaultSliderValue = sliderUpperBound / 2;
+    private int currentSliderValue;
 
     // keep track of state of simulation
-    boolean paused;
-    boolean reset;
+    private boolean paused;
+    private boolean reset;
+
 
     private Container contents = getContentPane();
 
@@ -61,7 +75,7 @@ public class SimulatorView extends JFrame implements ActionListener {
      * @param height The simulation's height.
      * @param width  The simulation's width.
      */
-    public SimulatorView(int height, int width) {
+    public SimulatorView(int height, int width, Simulator simulator) {
         stats = new FieldStats();
 
         setTitle("Life Simulation");
@@ -83,7 +97,9 @@ public class SimulatorView extends JFrame implements ActionListener {
         infoPane.add(genLabel, BorderLayout.WEST);
         infoPane.add(infoLabel, BorderLayout.CENTER);
 
-        JPanel bottomPane = createBottomPane();
+        debugPane = createDebugPane();
+        // disable all components (to only be interactable when simulate is called)
+        toggleDebugComponents(false);
 
         // create a grid style layout for positioning main components of the GUI
         contents.setLayout(new GridBagLayout());
@@ -100,13 +116,27 @@ public class SimulatorView extends JFrame implements ActionListener {
         contents.add(population, mainConstraints);
 
         mainConstraints.gridy = 3;
-        contents.add(bottomPane, mainConstraints);
+        contents.add(debugPane, mainConstraints);
+
+        // Add instruction Label + Species selector box
+        JPanel instructionPane = new JPanel(new GridBagLayout());
+        GridBagConstraints instConstraints = new GridBagConstraints();
+        instConstraints.insets = new Insets(5, 0, 5, 10);
 
         instructionLabel = new JLabel("You need to start a simulation with a specified number of generations!");
+
+        instConstraints.gridx = 0;
+        instConstraints.gridy = 0;
+        instructionPane.add(instructionLabel,instConstraints);
+
+        instConstraints.gridx = 1;
+        instConstraints.gridy = 0;
+        instructionPane.add(speciesSelector,instConstraints);
+
         mainConstraints.gridy = 4;
-        // padding above and below the instruction label
-        mainConstraints.insets = new Insets(10, 0, 10, 0);
-        contents.add(instructionLabel, mainConstraints);
+        contents.add(instructionPane, mainConstraints);
+
+        speciesSelector.addActionListener(this);
 
         // close the frame if the window is closed
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -115,20 +145,36 @@ public class SimulatorView extends JFrame implements ActionListener {
         setVisible(true);
     }
 
+    public boolean getMouseClicked(){
+        return mouseClicked;
+    }
+
+    public Location getMouseCoords(){
+        int x = mouseCoords[0];
+        int y = mouseCoords[1];
+        int gridx = (int) (x/fieldView.getViewScalingFactor());
+        int gridy = (int) (y/fieldView.getViewScalingFactor());
+
+        gridx = Math.max(Math.min(gridx, fieldView.gridWidth - 1), 0);
+        gridy = Math.max(Math.min(gridy, fieldView.gridHeight - 1), 0);
+
+        return new Location(gridy, gridx);
+    }
+
+    public void setMouseClicked(boolean val){
+        mouseClicked = val;
+    }
+
     /**
      * Enable components in order to make them interactable.
      */
-    public void toggleBottomComponents(boolean val) {
+    public void toggleDebugComponents(boolean val) {
         speedSlider.setEnabled(val);
         pauseButton.setEnabled(val);
         resetButton.setEnabled(val);
 
         if (val==true){
-            contents.remove(instructionLabel);
-            // used to update the scene graph with the above removal
-            contents.validate();
-            // redraw the Container with the instruction label removed
-            contents.repaint();
+            instructionLabel.setText("You can pause the simulation and drag mouse to add a cell!");
         }
     }
 
@@ -138,15 +184,15 @@ public class SimulatorView extends JFrame implements ActionListener {
      * 
      * @return bottomPane a JPanel object containing all of the components
      */
-    public JPanel createBottomPane() {
+    public JPanel createDebugPane() {
         // default values for the fields
         currentSliderValue = defaultSliderValue;
         paused = false;
         reset = false;
 
         // pane to hold components
-        JPanel bottomPane = new JPanel();
-        bottomPane.setLayout(new GridBagLayout()); // using the GridBagLayout
+        JPanel debugPane = new JPanel();
+        debugPane.setLayout(new GridBagLayout()); // using the GridBagLayout
 
         // create all the buttons and the speed selection slider
         speedSlider = new JSlider(0, sliderUpperBound, currentSliderValue);
@@ -159,9 +205,6 @@ public class SimulatorView extends JFrame implements ActionListener {
 
         resetButton = new JButton("Reset");
 
-        // disable all components (to only be interactable when simulate is called)
-        toggleBottomComponents(false);
-
         // pane used to contain both the slider component and accompanying label
         JLabel speedLabel = new JLabel("Simulation Speed: ", JLabel.CENTER);
         JPanel speedPane = new JPanel(new GridBagLayout());
@@ -171,7 +214,7 @@ public class SimulatorView extends JFrame implements ActionListener {
         // create the constraints object used to position the buttons on the grid
         GridBagConstraints gridConstraints = new GridBagConstraints();
         gridConstraints.fill = GridBagConstraints.NONE;
-        gridConstraints.insets = new Insets(13, 5, 0, 5); // add padding
+        gridConstraints.insets = new Insets(5, 5, 0, 5); // add padding
 
 
         // add components to speed pane horizontally
@@ -180,20 +223,20 @@ public class SimulatorView extends JFrame implements ActionListener {
         speedPane.add(speedSlider, speedConstraints);
 
         // add components to main pane horizontally
-        bottomPane.add(speedPane, gridConstraints);
+        debugPane.add(speedPane, gridConstraints);
 
         gridConstraints.gridx = 1;
-        bottomPane.add(pauseButton, gridConstraints);
+        debugPane.add(pauseButton, gridConstraints);
 
         gridConstraints.gridx = 2;
-        bottomPane.add(resetButton, gridConstraints);
+        debugPane.add(resetButton, gridConstraints);
 
         // add listeners for when the buttons are clicked
         pauseButton.addActionListener(this);
         resetButton.addActionListener(this);
         // speedSlider.addChangeListener(this);
 
-        return bottomPane;
+        return debugPane;
     }
 
     /**
@@ -207,6 +250,7 @@ public class SimulatorView extends JFrame implements ActionListener {
 
         currentSliderValue = defaultSliderValue;
         speedSlider.setValue(currentSliderValue);
+        speciesSelector.setSelectedIndex(0);
     }
 
     /**
@@ -226,22 +270,16 @@ public class SimulatorView extends JFrame implements ActionListener {
             }
         } else if (event.getSource() == resetButton) {
             reset = true;
+        } else if(event.getSource() == speciesSelector){
+            // convert 
+            speciesSelected = (Species) speciesSelector.getSelectedItem();
         }
     }
 
-    // /**
-    //  * If slider is moved, update the internal value
-    //  * 
-    //  * @param event the event that ocurred
-    //  */
-    // @Override
-    // public void stateChanged(ChangeEvent event) {
-    //     if (event.getSource() == speedSlider) {
-    //         if (!speedSlider.getValueIsAdjusting()) {
-    //             currentSliderValue = speedSlider.getValue();
-    //         }
-    //     }
-    // }
+    public Species getSpeciesSelected(){
+        return speciesSelected;
+    }
+
 
     /**
      * @return whether the simulation is paused or not
@@ -323,7 +361,7 @@ public class SimulatorView extends JFrame implements ActionListener {
      * This is rather advanced GUI stuff - you can ignore this
      * for your project if you like.
      */
-    private class FieldView extends JPanel {
+    private class FieldView extends JPanel implements MouseMotionListener {
         private final int GRID_VIEW_SCALING_FACTOR = 6;
         private int gridWidth, gridHeight;
         private int xScale, yScale;
@@ -331,6 +369,26 @@ public class SimulatorView extends JFrame implements ActionListener {
         private Graphics g;
         private Image fieldImage;
 
+        public int getViewScalingFactor(){
+            return GRID_VIEW_SCALING_FACTOR;
+        }
+
+        public void updateMouseCoords(MouseEvent e){
+            mouseCoords[0] = e.getX();
+            mouseCoords[1] = e.getY();
+        }
+
+        @Override
+        public void mouseMoved(MouseEvent event) {
+            updateMouseCoords(event);
+        }
+
+        @Override
+        public void mouseDragged(MouseEvent event) {
+            // Handle mouse dragging events if needed
+            setMouseClicked(true);
+            updateMouseCoords(event);
+        }
         /**
          * Create a new FieldView component.
          */
@@ -338,7 +396,24 @@ public class SimulatorView extends JFrame implements ActionListener {
             gridHeight = height;
             gridWidth = width;
             size = new Dimension(0, 0);
+            addMouseMotionListener(this);
+            this.addMouseListener(new MouseAdapter() {
+                // provides empty implementation of all MouseListener`s methods, allowing us to
+                @Override 
+                public void mousePressed(MouseEvent event) {
+                    updateMouseCoords(event);
+                    setMouseClicked(true);
+                }
+    
+                @Override
+                public void mouseReleased(MouseEvent e){
+                    setMouseClicked(false);
+                }
+                }
+            );
         }
+
+        @Override
 
         /**
          * Tell the GUI manager how big we would like to be.

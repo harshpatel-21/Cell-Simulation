@@ -18,11 +18,6 @@ public abstract class Cell {
     static Color isseColour = Color.MAGENTA;
     static Color infectedColour = Color.RED;
     static Color defaultHeliColor = new Color(200, 255, 255);
-
-    enum Species{
-        HELICOBACTER, MYCOPLASMA, ISSERIA, INFECTED;
-    }
-
     
     // Whether the cell is alive or not.
     private boolean alive;
@@ -155,6 +150,10 @@ public abstract class Cell {
         cellSpecies = species;
     }
 
+    public void setState(boolean val){
+        alive = val;
+    }
+
     /**
      * Set the species of the cell for the next generation.
      * 
@@ -162,27 +161,35 @@ public abstract class Cell {
      */
     protected void setNextSpecies(Species species) {
         nextCellSpecies = species;
+        setNextColor(getSpeciesColor(species));
+    }
 
+    protected Color getSpeciesColor(Species species){
         // set the colour of the cell in the next generation according to its species
         switch (nextCellSpecies){
             case HELICOBACTER:
-                setNextColor(heliColour);
-                break;
+                return heliColour;
 
             case MYCOPLASMA:
-                setNextColor(mycoColour);
-                break;
+                return mycoColour;
 
             case ISSERIA:
-                setNextColor(isseColour);
-                break;
+                return isseColour;
 
             case INFECTED:
-                setNextColor(infectedColour);
-                break;
+                return infectedColour;
+            
+            case TEMPCELL:
+                return Color.BLACK;
         }
+        return null;
+    }
 
-        // setNextColor(Species.getColor(nextCellSpecies));
+    protected void setSpecies(Species species){
+        cellSpecies = species;
+        nextCellSpecies = species;
+        setNextColor(getSpeciesColor(species));
+        setColor(getSpeciesColor(species));
     }
 
     /**

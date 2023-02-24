@@ -74,7 +74,7 @@ public class Simulator {
         field = new Field(depth, width);
 
         // Create a view of the state of each location in the field.
-        view = new SimulatorView(depth, width);
+        view = new SimulatorView(depth, width, this);
 
         // Setup a valid starting point.
         reset();
@@ -96,22 +96,60 @@ public class Simulator {
      * @param numGenerations The number of generations to run for.
      */
     public void simulate(int numGenerations) {
-        view.toggleBottomComponents(true); // allow the bottom components to be interactable
+        view.toggleDebugComponents(true); // allow the bottom components to be interactable
 
         while (view.isViable(field)) {
-
             // simulate while the simulator is not paused and the generation limit has not
             // been reached
             if (!view.getPause()) {
                 simOneGeneration();
+                delay((int) (350 * view.getDelayMultiplier()));
             }
             // reset simulation
             if (view.getReset()) {
                 reset();
                 view.resetBottomPane();
             }
+
+            if (view.getMouseClicked() && view.getPause()){
+                Location gridCoords = view.getMouseCoords();
+                addObject(gridCoords);
+            }
             // delay to control speed of simulation
-            delay((int) (300 * view.getDelayMultiplier()));
+            
+        }
+    }
+
+    public void addObject(Location location){
+        Species speciesSelected = view.getSpeciesSelected();
+        Cell cellToAdd = null;
+        switch (speciesSelected){
+            case HELICOBACTER:
+                cellToAdd = new Helicobacter(field, location);
+                break;
+
+            case MYCOPLASMA:
+                cellToAdd = new Mycoplasma(field, location);
+                break;
+
+            case ISSERIA:
+                cellToAdd = new Isseria(field, location);
+                break;
+            
+            case TEMPCELL:
+                cellToAdd = new tempCell(field, location);
+                break;
+
+            case INFECTED:
+                cellToAdd = new Helicobacter(field, location);
+                cellToAdd.setSpecies(Species.INFECTED);
+                break;
+        }
+
+        if (cellToAdd != null){
+            field.place(cellToAdd, location);
+            cells.add(cellToAdd);
+            view.showStatus(generation, field);
         }
     }
 
@@ -154,8 +192,6 @@ public class Simulator {
 
         // Show the starting state in the view.
         view.showStatus(generation, field);
-
-        
     }
 
     /**
