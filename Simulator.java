@@ -160,7 +160,7 @@ public class Simulator {
                 break;
         }
 
-        // if the class of the selected species exists, add the cell
+        // if the class of the selected species exists, add the cell to the field
         if (cellToAdd == null){
             return;
         }

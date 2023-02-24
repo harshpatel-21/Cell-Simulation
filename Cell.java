@@ -2,6 +2,7 @@ import java.awt.Color;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
+import java.util.HashMap;
 
 /**
  * A class representing the shared characteristics of all forms of life
@@ -18,7 +19,9 @@ public abstract class Cell {
     static Color isseColour = Color.MAGENTA;
     static Color infectedColour = Color.RED;
     static Color defaultHeliColor = new Color(200, 255, 255);
-    
+
+    HashMap<Species, Color> speciesColor = new HashMap<>();
+
     // Whether the cell is alive or not.
     private boolean alive;
 
@@ -48,6 +51,14 @@ public abstract class Cell {
      * @param location The location within the field.
      */
     public Cell(Field field, Location location, Color col) {
+
+        // place species' respective colour in a hashmap to avoid if/switch statements
+        // when retrieving a colour for a species
+        speciesColor.put(Species.HELICOBACTER, heliColour);
+        speciesColor.put(Species.MYCOPLASMA, mycoColour);
+        speciesColor.put(Species.ISSERIA, isseColour);
+        speciesColor.put(Species.INFECTED, infectedColour);
+
         this.field = field;
 
         setLocation(location);
@@ -150,7 +161,7 @@ public abstract class Cell {
         cellSpecies = species;
     }
 
-    public void setState(boolean val){
+    public void setState(boolean val) {
         alive = val;
     }
 
@@ -164,33 +175,18 @@ public abstract class Cell {
         setNextColor(getSpeciesColor(species));
     }
 
-    protected Color getSpeciesColor(Species species){
+    protected Color getSpeciesColor(Species species) {
         // set the colour of the cell in the next generation according to its species
-        switch (nextCellSpecies){
-            case HELICOBACTER:
-                return heliColour;
-
-            case MYCOPLASMA:
-                return mycoColour;
-
-            case ISSERIA:
-                return isseColour;
-
-            case INFECTED:
-                return infectedColour;
-            
-            case TEMPCELL:
-                return Color.BLACK;
-        }
-        return null;
+        return speciesColor.get(species);
     }
 
     /**
      * set the species of a cell in the current and next generation
      * used mainly when adding new cell using mouse
+     * 
      * @param species
      */
-    protected void setSpecies(Species species){
+    protected void setSpecies(Species species) {
         cellSpecies = species;
         nextCellSpecies = species;
         setNextColor(getSpeciesColor(species));
@@ -315,7 +311,7 @@ public abstract class Cell {
      */
     protected void darkenHeliColour(int generation) {
         // get the current RGB values of Helicobacter color
-        int r,g,b;
+        int r, g, b;
 
         r = defaultHeliColor.getRed();
         g = defaultHeliColor.getGreen();
@@ -327,14 +323,14 @@ public abstract class Cell {
         g = (int) Math.max(g - (0.1 * generation), 126);
         b = 255;
 
-        // set the new Helicobacter's static color 
+        // set the new Helicobacter's static color
         heliColour = new Color(r, g, b);
         // Species.setColor(Species.HELICOBACTER, heliColor);
 
         // change the colour of the cell if it's a Helicobacter
         if (getSpecies() == Species.HELICOBACTER)
             setNextColor(heliColour);
-            
+
     }
 
 }
