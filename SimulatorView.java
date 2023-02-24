@@ -3,10 +3,7 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
 
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
-import java.util.Arrays;
-import java.util.List;
+// TODO: discuss with I9 trappy about static colours in species to allow coloured JPanel in GUI when selecting a Cell
 
 /**
  * A graphical view of the simulation grid. The view displays a rectangle for
