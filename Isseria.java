@@ -21,10 +21,11 @@ public class Isseria extends Cell {
      */
     public Isseria(Field field, Location location, Color col) {
         super(field, location, col);
+        setInitialSpecies(Species.ISSERIA);
     }
 
     public Isseria(Field field, Location location) {
-        this(field, location, Color.MAGENTA);
+        this(field, location, Species.getColor(Species.ISSERIA));
     }
 
     /**
@@ -35,7 +36,7 @@ public class Isseria extends Cell {
         Random rand = new Random();
 
         // get all the living neighbours of the same colour
-        List<Cell> sameNeighbours = getLivingNeighboursByColour(getColor());
+        List<Cell> sameNeighbours = getLivingNeighboursBySpecies(getSpecies());
 
         // if exactly 2 neighbours, there is a chance that the cell is set alive
         if (sameNeighbours.size() == 2) {

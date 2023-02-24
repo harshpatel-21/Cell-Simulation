@@ -102,7 +102,7 @@ public class Simulator {
 
             // simulate while the simulator is not paused and the generation limit has not
             // been reached
-            if (!view.getPause() && generation < numGenerations) {
+            if (!view.getPause()) {
                 simOneGeneration();
             }
             // reset simulation
@@ -148,11 +148,17 @@ public class Simulator {
      */
     public void reset() {
         generation = 0;
+
+        // reset colours in Species
+        Species.setUpdefaultColours();
+
         cells.clear();
         populate();
 
         // Show the starting state in the view.
         view.showStatus(generation, field);
+
+        
     }
 
     /**

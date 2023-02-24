@@ -141,7 +141,7 @@ public class SimulatorView extends JFrame implements ActionListener {
     public JPanel createBottomPane() {
         // default values for the fields
         currentSliderValue = defaultSliderValue;
-        paused = reset;
+        paused = false;
         reset = false;
 
         // pane to hold components

@@ -23,10 +23,11 @@ public class Mycoplasma extends Cell {
      */
     public Mycoplasma(Field field, Location location, Color col) {
         super(field, location, col);
+        setInitialSpecies(Species.MYCOPLASMA);
     }
 
     public Mycoplasma(Field field, Location location) {
-        this(field, location, Color.ORANGE);
+        this(field, location, Species.getColor(Species.MYCOPLASMA));
     }
 
     /**
@@ -35,7 +36,7 @@ public class Mycoplasma extends Cell {
     @Override
     public void act(int generation) {
         // get all the living neighbours of the same colour
-        List<Cell> sameNeighbours = getLivingNeighboursByColour(getColor());
+        List<Cell> sameNeighbours = getLivingNeighboursBySpecies(getSpecies());
 
         Random rand = Randomizer.getRandom();
 
@@ -45,9 +46,11 @@ public class Mycoplasma extends Cell {
                 setNextState(true);
             else {
                 // if the cell is infected, there is a probability that is set alive
-                if (getColor().equals(infectedColour) && rand.nextDouble() < Math.max(10 / generation, 0.08)) {
+                // as generations increase, the probability decreases to a minimum of 7%.
+                if (getSpecies() == Species.INFECTED && rand.nextDouble() < Math.max(10 / generation, 0.09)) {
                     setNextState(true);
-                } else
+                } 
+                else
                     // otherwise cell dies
                     setNextState(false);
             }
@@ -66,19 +69,22 @@ public class Mycoplasma extends Cell {
         Random rand = new Random();
 
         // get all the living neighbours of the same colour
-        List<Cell> sameNeighbours = getLivingNeighboursByColour(getColor());
+        List<Cell> sameNeighbours = getLivingNeighboursBySpecies(getSpecies());
         // get all the living neighbours that are Isseria type
-        List<Cell> isseNeighbours = getLivingNeighboursByColour(isseColour);
+        List<Cell> isseNeighbours = getLivingNeighboursBySpecies(Species.ISSERIA);
 
         // if there is more than one Mycoplasma neighbour AND more than one Isseria
         // neighbour
         if (sameNeighbours.size() >= 1 && isseNeighbours.size() >= 1) {
             // probability that the cells becomes infected
             if (rand.nextDouble() < 0.9) {
-                setNextColor(infectedColour);
-            } else {
+                // setNextColor(infectedColour);
+                setNextSpecies(Species.INFECTED);
+            } 
+            else {
                 // otherwise, make cell Isseria
-                setNextColor(isseColour);
+                // setNextColor(isseColour);
+                setNextSpecies(Species.ISSERIA);
             }
             setNextState(true);
         }
