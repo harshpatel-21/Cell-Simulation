@@ -24,7 +24,7 @@ public class Helicobacter extends Cell {
     }
 
     public Helicobacter(Field field, Location location) {
-        this(field, location, Species.getColor(Species.HELICOBACTER));
+        this(field, location, Cell.heliColour);
     }
 
     /**

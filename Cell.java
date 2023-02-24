@@ -12,6 +12,18 @@ import java.util.stream.Collectors;
  */
 
 public abstract class Cell {
+    // default colour of cells
+    static Color heliColour = new Color(200, 255, 255);
+    static Color mycoColour = Color.ORANGE;
+    static Color isseColour = Color.MAGENTA;
+    static Color infectedColour = Color.RED;
+    static Color defaultHeliColor = new Color(200, 255, 255);
+
+    enum Species{
+        HELICOBACTER, MYCOPLASMA, ISSERIA, INFECTED;
+    }
+
+    
     // Whether the cell is alive or not.
     private boolean alive;
 
@@ -28,14 +40,6 @@ public abstract class Cell {
     private Color color = Color.white;
 
     private Color nextColor = color;
-
-    // default colour of cells
-    // protected Color heliColour = new Color(200, 255, 255);
-    // protected Color mycoColour = Color.ORANGE;
-    // protected Color isseColour = Color.MAGENTA;
-    // protected Color infectedColour = Color.RED;
-    protected Color defaultHeliColor = Species.getColor(Species.HELICOBACTER);
-    
 
     // probability that a cell will get infected
     private double infectRate = 0.1025;
@@ -158,7 +162,27 @@ public abstract class Cell {
      */
     protected void setNextSpecies(Species species) {
         nextCellSpecies = species;
-        setNextColor(Species.getColor(nextCellSpecies));
+
+        // set the colour of the cell in the next generation according to its species
+        switch (nextCellSpecies){
+            case HELICOBACTER:
+                setNextColor(heliColour);
+                break;
+
+            case MYCOPLASMA:
+                setNextColor(mycoColour);
+                break;
+
+            case ISSERIA:
+                setNextColor(isseColour);
+                break;
+
+            case INFECTED:
+                setNextColor(infectedColour);
+                break;
+        }
+
+        // setNextColor(Species.getColor(nextCellSpecies));
     }
 
     /**
@@ -217,7 +241,6 @@ public abstract class Cell {
             // there is a probability that the cell is turned in to a Helicobacter if it is
             // surrounded by 1 to 3 (inclusive) Helicobacter cells
             if ((heliNum >= 1 && heliNum <= 3) && rand.nextDouble() < engulfProbability) {
-                // setNextColor(heliColour);
                 setNextState(true);
                 setNextSpecies(Species.HELICOBACTER);
             }
@@ -245,7 +268,6 @@ public abstract class Cell {
             if (infectedNeighbours.size() >= 1) {
                 // there is a chance that the cell is infected
                 if (rand.nextDouble() < infectRate) {
-                    // setNextColor(infectedColour);
                     setNextState(true);
                     setNextSpecies(Species.INFECTED);
                 }
@@ -260,7 +282,6 @@ public abstract class Cell {
             // if there are more than 3 infected neighbours,
             // there is a probability for that cell to become infected
             if (infectedNum > 3 && rand.nextDouble() < 0.11) {
-                // setNextColor(infectedColour);
                 setNextState(true);
                 setNextSpecies(Species.INFECTED);
             }
@@ -283,26 +304,24 @@ public abstract class Cell {
     protected void darkenHeliColour(int generation) {
         // get the current RGB values of Helicobacter color
         int r,g,b;
-        Color heliColor = defaultHeliColor;
 
-        r = heliColor.getRed();
-        g = heliColor.getGreen();
-        b = heliColor.getBlue();
+        r = defaultHeliColor.getRed();
+        g = defaultHeliColor.getGreen();
+        b = defaultHeliColor.getBlue();
 
         // calculate new values for darker Helicobacter color
 
         r = (int) Math.max(r - (0.1 * generation), 52);
         g = (int) Math.max(g - (0.1 * generation), 126);
+        b = 255;
 
         // set the new Helicobacter's static color 
-        // r=g=111;
-
-        heliColor = new Color(r, g, b);
-        Species.setColor(Species.HELICOBACTER, heliColor);
+        heliColour = new Color(r, g, b);
+        // Species.setColor(Species.HELICOBACTER, heliColor);
 
         // change the colour of the cell if it's a Helicobacter
         if (getSpecies() == Species.HELICOBACTER)
-            setNextColor(heliColor);
+            setNextColor(heliColour);
             
     }
 

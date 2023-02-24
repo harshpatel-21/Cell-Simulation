@@ -27,7 +27,7 @@ public class Mycoplasma extends Cell {
     }
 
     public Mycoplasma(Field field, Location location) {
-        this(field, location, Species.getColor(Species.MYCOPLASMA));
+        this(field, location, Cell.mycoColour);
     }
 
     /**
@@ -78,12 +78,10 @@ public class Mycoplasma extends Cell {
         if (sameNeighbours.size() >= 1 && isseNeighbours.size() >= 1) {
             // probability that the cells becomes infected
             if (rand.nextDouble() < 0.9) {
-                // setNextColor(infectedColour);
                 setNextSpecies(Species.INFECTED);
             } 
             else {
                 // otherwise, make cell Isseria
-                // setNextColor(isseColour);
                 setNextSpecies(Species.ISSERIA);
             }
             setNextState(true);

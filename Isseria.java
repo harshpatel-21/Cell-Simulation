@@ -25,7 +25,7 @@ public class Isseria extends Cell {
     }
 
     public Isseria(Field field, Location location) {
-        this(field, location, Species.getColor(Species.ISSERIA));
+        this(field, location, Cell.isseColour);
     }
 
     /**

@@ -149,9 +149,6 @@ public class Simulator {
     public void reset() {
         generation = 0;
 
-        // reset colours in Species
-        Species.setUpdefaultColours();
-
         cells.clear();
         populate();
 
