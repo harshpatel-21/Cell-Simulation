@@ -41,6 +41,8 @@ public class Simulator {
     // A graphical view of the simulation.
     private SimulatorView view;
 
+    private boolean populatedWithCells;
+
     /**
      * Execute simulation
      */
@@ -77,7 +79,7 @@ public class Simulator {
         view = new SimulatorView(depth, width, this);
 
         // Setup a valid starting point.
-        reset();
+        resetToEmptyField();
     }
 
     /**
@@ -96,9 +98,14 @@ public class Simulator {
      * @param numGenerations The number of generations to run for.
      */
     public void simulate(int numGenerations) {
-        view.toggleDebugComponents(true); // allow the bottom components to be interactable
+        view.toggleDebugComponents(true);
+        view.toggleCellAdding(true);
 
-        while (view.isViable(field)) {
+        while (true) {
+            // checks if there is a living species on the field -> we don't want this to
+            // affect our simulation so not included in while loop condition
+            view.isViable(field);
+
             // simulate while the simulator is not paused and the generation limit has not
             // been reached
             if (!view.getPause() && generation < numGenerations) {
@@ -106,38 +113,57 @@ public class Simulator {
                 // delay to control the speed of the simulation
                 delay((int) (350 * view.getDelayMultiplier()));
             }
-            
-            // reset simulation
+
+            // if the field wasn't reset with populated cells and the populate button hasn't
+            // been pressed, check for user input to add cells
+            if (!populatedWithCells && !view.getPopulateButtonPressed()) {
+
+                // check to see if a user is adding cells onto the grid and add if possible.
+                if (view.getIsMouseBeingPressed()) {
+                    view.toggleDebugComponents(true); // allow the bottom components to be interactable
+                    Location gridCoords = view.getMouseCoords();
+                    addCellIfPossible(gridCoords);
+                }
+
+                // toggle the ability to draw cells depending on whether simulation is paused.
+                view.toggleCellAdding(view.getPause());
+
+            }
+
+            // if the populate button was pressed, reset the field with populated cells
+            if (view.getPopulateButtonPressed()) {
+                populatedWithCells = true;
+                resetToPopulatedField();
+                view.resetComponents();
+                // once grid is populated, don't allow user to change cells
+                view.toggleCellAdding(false);
+            }
+
+            // reset simulation to default
             if (view.getReset()) {
-                reset();
-                view.resetBottomPane();
+                resetToEmptyField();
+                view.resetComponents();
+                populatedWithCells = false;
             }
-
-            // check to see if a cell is to be added onto the grid if the view is paused.
-            if (view.getIsMouseBeingPressed() && view.getPause()){
-                Location gridCoords = view.getMouseCoords();
-                addCellIfPossible(gridCoords);
-            }
-
-            
         }
     }
 
     /**
      * add a cell in a given location
+     * 
      * @param location
      */
-    public void addCellIfPossible(Location location){
+    public void addCellIfPossible(Location location) {
         Species speciesSelected = view.getSpeciesSelected();
         Cell cellToAdd = null;
 
         // dont continue if no species was selected
-        if (speciesSelected == null){
+        if (speciesSelected == null) {
             return;
         }
 
-        // create the appropriate cell depending on the selected species 
-        switch (speciesSelected){
+        // create the appropriate cell depending on the selected species
+        switch (speciesSelected) {
             case HELICOBACTER:
                 cellToAdd = new Helicobacter(field, location);
                 break;
@@ -149,9 +175,9 @@ public class Simulator {
             case ISSERIA:
                 cellToAdd = new Isseria(field, location);
                 break;
-            
-            case TEMPCELL:
-                cellToAdd = new tempCell(field, location);
+
+            case EMPTYCELL:
+                // will keep cellToAdd to null.
                 break;
 
             case INFECTED:
@@ -160,16 +186,12 @@ public class Simulator {
                 break;
         }
 
-        // if the class of the selected species exists, add the cell to the field
-        if (cellToAdd == null){
-            return;
-        }
         field.place(cellToAdd, location);
         cells.add(cellToAdd);
-        
+
         // update field
         view.showStatus(generation, field);
-    
+
     }
 
     /**
@@ -201,13 +223,26 @@ public class Simulator {
     }
 
     /**
-     * Reset the simulation to a starting position.
+     * Reset the simulation with empty cells
      */
-    public void reset() {
+    public void resetToEmptyField() {
         generation = 0;
 
         cells.clear();
-        populate();
+        populateWithDeadCells();
+
+        // Show the starting state in the view.
+        view.showStatus(generation, field);
+    }
+
+    /**
+     * reset the population
+     */
+    public void resetToPopulatedField() {
+        generation = 0;
+
+        cells.clear();
+        populateWithCells();
 
         // Show the starting state in the view.
         view.showStatus(generation, field);
@@ -216,13 +251,30 @@ public class Simulator {
     /**
      * Randomly populate the field live/dead life forms
      */
-    private void populate() {
+    private void populateWithCells() {
         field.clear();
         // iterates over each location in the field
         for (int row = 0; row < field.getDepth(); row++) {
             for (int col = 0; col < field.getWidth(); col++) {
                 Location location = new Location(row, col);
                 populateSingleLocation(location);
+            }
+        }
+    }
+
+    /**
+     * populate entire field with dead cells in their respective area
+     */
+    private void populateWithDeadCells() {
+        field.clear();
+        // iterates over each location in the field
+        for (int row = 0; row < field.getDepth(); row++) {
+            for (int col = 0; col < field.getWidth(); col++) {
+                Location location = new Location(row, col);
+                createDeadCell(location);
+                // field.place(null, location)
+                // TODO: DISCUSS WITH I9 TRAPPY WHETHER TO KEEP THIS OR DO NULL TO AVOID OBJECT
+                // REPLACEMENT
             }
         }
     }

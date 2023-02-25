@@ -2,6 +2,7 @@ import java.awt.Color;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.HashMap;
 
 /**
@@ -14,11 +15,11 @@ import java.util.HashMap;
 
 public abstract class Cell {
     // default colour of cells
-    static Color heliColour = new Color(200, 255, 255);
-    static Color mycoColour = Color.ORANGE;
-    static Color isseColour = Color.MAGENTA;
-    static Color infectedColour = Color.RED;
-    static Color defaultHeliColor = new Color(200, 255, 255);
+    private Color heliColour = new Color(200, 255, 255);
+    private Color mycoColour = Color.ORANGE;
+    private Color isseColour = Color.MAGENTA;
+    private Color infectedColour = Color.RED;
+    private Color defaultHeliColor = new Color(200, 255, 255);
 
     HashMap<Species, Color> speciesColor = new HashMap<>();
 
@@ -40,7 +41,7 @@ public abstract class Cell {
     private Color nextColor = color;
 
     // probability that a cell will get infected
-    private double infectRate = 0.1025;
+    private double infectRate = 0.10;
 
     protected Species cellSpecies, nextCellSpecies;
 
@@ -229,7 +230,8 @@ public abstract class Cell {
      */
     protected List<Cell> getLivingNeighboursBySpecies(Species species) {
         List<Cell> livingNeighbours = field.getLivingNeighbours(getLocation());
-        return livingNeighbours.stream().filter(cell -> cell.getSpecies() == species).collect(Collectors.toList());
+        Stream<Cell> sameNeighbours = livingNeighbours.stream().filter(cell -> cell.getSpecies() == species);
+        return sameNeighbours.collect(Collectors.toList());
     }
 
     /**
@@ -240,11 +242,19 @@ public abstract class Cell {
         Random rand = Randomizer.getRandom();
 
         // if the cell is not a Helicobacter
-        if (getSpecies() != Species.HELICOBACTER) {
+        if (getSpecies() != Species.HELICOBACTER && (getSpecies() != Species.MYCOPLASMA && !isAlive())) {
             // get number of helicobacter neighbours
             int heliNum = getLivingNeighboursBySpecies(Species.HELICOBACTER).size();
 
             double engulfProbability = 0.135;
+
+            if (getSpecies() == Species.INFECTED){
+                engulfProbability = 0.2;
+            }
+
+            if (getSpecies() == Species.EMPTYCELL){
+                engulfProbability = 0.009;
+            }
 
             // there is a probability that the cell is turned in to a Helicobacter if it is
             // surrounded by 1 to 3 (inclusive) Helicobacter cells

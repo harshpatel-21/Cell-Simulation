@@ -27,7 +27,7 @@ public class Mycoplasma extends Cell {
     }
 
     public Mycoplasma(Field field, Location location) {
-        this(field, location, Cell.mycoColour);
+        this(field, location, Color.ORANGE);
     }
 
     /**

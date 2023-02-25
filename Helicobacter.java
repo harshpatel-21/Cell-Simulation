@@ -24,7 +24,7 @@ public class Helicobacter extends Cell {
     }
 
     public Helicobacter(Field field, Location location) {
-        this(field, location, Cell.heliColour);
+        this(field, location, new Color(200, 255, 255));
     }
 
     /**
@@ -40,17 +40,15 @@ public class Helicobacter extends Cell {
             setNextState(true);
         }
 
-        if (isAlive()){
-            // if exactly 1 helicobacter neighbour, cell dies
-            if (sameNeighbours.size() == 1) {
-                setNextState(false);
-                // if exactly 3 helicobacter neighbours, cell is set alive
-            } else if (sameNeighbours.size() == 3) {
-                setNextState(true);
-                // if more than 3 helicobacter neighbours, cell dies due to overcrowding
-            } else if (sameNeighbours.size() > 3) {
-                setNextState(false);
-            }
+        // if exactly 1 helicobacter neighbour, cell dies
+        if (sameNeighbours.size() == 1) {
+            setNextState(false);
+            // if exactly 3 helicobacter neighbours, cell is set alive
+        } else if (sameNeighbours.size() == 3) {
+            setNextState(true);
+            // if more than 3 helicobacter neighbours, cell dies due to overcrowding
+        } else if (sameNeighbours.size() > 3) {
+            setNextState(false);
         }
     }
 }

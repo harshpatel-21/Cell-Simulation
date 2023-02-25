@@ -1,7 +1,6 @@
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-import javax.swing.event.*;
 
 // TODO: discuss with I9 trappy about static colours in species to allow coloured JPanel in GUI when selecting a Cell
 
@@ -47,6 +46,7 @@ public class SimulatorView extends JFrame implements ActionListener {
     private JSlider speedSlider; // changes how fast the simulation run
     private JButton pauseButton; // button to pause/resume simulation
     private JButton resetButton; // button to reset simulation
+    private JButton populateButton;
 
     // ComboBox which will allow the seleciton of species
     Species[] speciesNames = Species.class.getEnumConstants();
@@ -61,6 +61,7 @@ public class SimulatorView extends JFrame implements ActionListener {
     // keep track of state of simulation
     private boolean paused;
     private boolean reset;
+    private boolean populateButtonPressed;
 
     // container which whill store components in the running JFrame
     private Container contents = getContentPane();
@@ -155,13 +156,30 @@ public class SimulatorView extends JFrame implements ActionListener {
         return isMouseBeingPressed;
     }
 
+    /**
+     * Calculate the the row and column from where the mouse was clicked relative to
+     * the FieldView JPanel
+     * Restrict the row and column to fit the grid's width and height (handling out
+     * of bounds clicks)
+     * 
+     * x-coordinate / tile width == column
+     * y-cordinate / tile height == row
+     * 
+     * @return A location object of the row and column of the mouse click
+     */
     public Location getMouseCoords() {
         int x = mouseCoords[0];
         int y = mouseCoords[1];
+
+        // calculate which column (gridx) and which row (gridy) the mouse click was at
         int gridx = (int) (x / fieldView.getViewScalingFactor());
         int gridy = (int) (y / fieldView.getViewScalingFactor());
 
+        // the column can be a maximum of gridWidth-1 index and the minimum it can be is
+        // 0
         gridx = Math.max(Math.min(gridx, fieldView.gridWidth - 1), 0);
+
+        // the row can be a maximum of gridHeight-1 index and the minimum it can be is 0
         gridy = Math.max(Math.min(gridy, fieldView.gridHeight - 1), 0);
 
         return new Location(gridy, gridx);
@@ -174,12 +192,23 @@ public class SimulatorView extends JFrame implements ActionListener {
         speedSlider.setEnabled(val);
         pauseButton.setEnabled(val);
         resetButton.setEnabled(val);
+    }
 
-        // if the bottom components are to be enabled, also enable species selection
-        if (val == true) {
-            instructionLabel.setText("You can pause the simulation and drag mouse to add a cell!");
-            speciesSelector.setEnabled(true);
+    /**
+     * Enable/Disable the species selector whilst appropriately changing the
+     * instruction label
+     * 
+     * @param val
+     */
+    public void toggleCellAdding(boolean val) {
+        if (val) {
+            instructionLabel.setText("You can click (and drag) the mouse to add cells on the grid!");
+        } else {
+            instructionLabel.setText("You cannot draw during a simulation or on a pre-populated field");
         }
+
+        // set the status of the selector depending on if @param val is true or false
+        speciesSelector.setEnabled(val);
     }
 
     /**
@@ -191,7 +220,7 @@ public class SimulatorView extends JFrame implements ActionListener {
     public JPanel createDebugPane() {
         // default values for the fields
         currentSliderValue = defaultSliderValue;
-        paused = false;
+        paused = true;
         reset = false;
 
         // pane to hold components
@@ -205,9 +234,9 @@ public class SimulatorView extends JFrame implements ActionListener {
         speedSlider.setPaintTicks(true);
         speedSlider.setInverted(true); // invert the scale. eg from 0-100 to 100-0
 
-        pauseButton = new JButton("Pause");
-
+        pauseButton = new JButton("Start");
         resetButton = new JButton("Reset");
+        populateButton = new JButton("Populate field");
 
         // pane used to contain both the slider component and accompanying label
         JLabel speedLabel = new JLabel("Simulation Speed: ", JLabel.CENTER);
@@ -234,26 +263,33 @@ public class SimulatorView extends JFrame implements ActionListener {
         gridConstraints.gridx = 2;
         debugPane.add(resetButton, gridConstraints);
 
+        gridConstraints.gridx = 3;
+        debugPane.add(populateButton, gridConstraints);
+
         // add listeners for when the buttons are clicked
         pauseButton.addActionListener(this);
         resetButton.addActionListener(this);
-        // speedSlider.addChangeListener(this);
+        populateButton.addActionListener(this);
 
         return debugPane;
     }
 
     /**
-     * Reset state of button to the defaults.
+     * Reset state of certain components to the defaults.
      */
-    public void resetBottomPane() {
+    public void resetComponents() {
         paused = true;
-        pauseButton.setText("Start");
-
         reset = false;
+        populateButtonPressed = false;
+        populateButton.setEnabled(true);
+
+        pauseButton.setText("Start");
 
         currentSliderValue = defaultSliderValue;
         speedSlider.setValue(currentSliderValue);
+
         speciesSelector.setSelectedIndex(0);
+
     }
 
     /**
@@ -271,14 +307,25 @@ public class SimulatorView extends JFrame implements ActionListener {
             } else {
                 pauseButton.setText("Pause");
             }
-        } else if (event.getSource() == resetButton) {
+        } 
+        else if (event.getSource() == resetButton) {
             reset = true;
-        } else if (event.getSource() == speciesSelector) {
+
+        } 
+        else if (event.getSource() == speciesSelector) {
             // convert
             speciesSelected = (Species) speciesSelector.getSelectedItem();
+        } 
+        else if (event.getSource() == populateButton) {
+            populateButtonPressed = true;
+            populateButton.setEnabled(false);
         }
     }
 
+    /**
+     * 
+     * @return the species selected in the species selector JComboBox
+     */
     public Species getSpeciesSelected() {
         return speciesSelected;
     }
@@ -305,7 +352,16 @@ public class SimulatorView extends JFrame implements ActionListener {
     }
 
     /**
-     * check for slider value every time and update it
+     * 
+     * @return if the population button has been pressed or not
+     */
+    public boolean getPopulateButtonPressed() {
+        return populateButtonPressed;
+    }
+
+    /**
+     * check for new slider value constantly to allow a change in simulation speed
+     * in real-time
      */
     public void updateSliderValue() {
         currentSliderValue = speedSlider.getValue();
@@ -438,7 +494,6 @@ public class SimulatorView extends JFrame implements ActionListener {
                 }
             });
         }
-
 
         /**
          * Tell the GUI manager how big we would like to be.
