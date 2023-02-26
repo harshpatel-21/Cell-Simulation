@@ -94,7 +94,7 @@ public class SimulatorView extends JFrame implements ActionListener {
         infoPane.add(infoLabel, BorderLayout.CENTER);
 
         debugPane = createDebugPane();
-        // disable all debug components (to only be interactable when simulate is
+        // disable all debug components (to only be interactable when simulate() is
         // called)
         toggleDebugComponents(false);
 
@@ -149,58 +149,12 @@ public class SimulatorView extends JFrame implements ActionListener {
     }
 
     /**
-     * 
-     * @return whether the mouse button is being pressed
-     */
-    public boolean getIsMouseBeingPressed() {
-        return isMouseBeingPressed;
-    }
-
-    /**
-     * Calculate the the row and column from where the mouse was clicked relative to
-     * the FieldView JPanel
-     * Restrict the row and column to fit the grid's width and height (handling out
-     * of bounds clicks)
-     * 
-     * x-coordinate / tile width == column
-     * y-cordinate / tile height == row
-     * 
-     * @return A location object of the row and column of the mouse click
-     */
-    public Location getMouseCoords() {
-        int x = mouseCoords[0];
-        int y = mouseCoords[1];
-
-        // calculate which column (gridx) and which row (gridy) the mouse click was at
-        int gridx = (int) (x / fieldView.getViewScalingFactor());
-        int gridy = (int) (y / fieldView.getViewScalingFactor());
-
-        // the column can be a maximum of gridWidth-1 index and the minimum it can be is
-        // 0
-        gridx = Math.max(Math.min(gridx, fieldView.gridWidth - 1), 0);
-
-        // the row can be a maximum of gridHeight-1 index and the minimum it can be is 0
-        gridy = Math.max(Math.min(gridy, fieldView.gridHeight - 1), 0);
-
-        return new Location(gridy, gridx);
-    }
-
-    /**
-     * Enable components in order to make them interactable.
-     */
-    public void toggleDebugComponents(boolean val) {
-        speedSlider.setEnabled(val);
-        pauseButton.setEnabled(val);
-        resetButton.setEnabled(val);
-    }
-
-    /**
      * Enable/Disable the species selector whilst appropriately changing the
      * instruction label
      * 
      * @param val
      */
-    public void toggleCellAdding(boolean val) {
+    public void toggleAllowUserToSelectSpecies(boolean val) {
         if (val) {
             instructionLabel.setText("You can click (and drag) the mouse to add cells on the grid!");
         } else {
@@ -209,6 +163,16 @@ public class SimulatorView extends JFrame implements ActionListener {
 
         // set the status of the selector depending on if @param val is true or false
         speciesSelector.setEnabled(val);
+    }
+
+    /**
+     * toggle state of components set them as interactable or not.
+     */
+    public void toggleDebugComponents(boolean val) {
+        speedSlider.setEnabled(val);
+        pauseButton.setEnabled(val);
+        resetButton.setEnabled(val);
+        populateButton.setEnabled(val);
     }
 
     /**
@@ -365,6 +329,43 @@ public class SimulatorView extends JFrame implements ActionListener {
      */
     public void updateSliderValue() {
         currentSliderValue = speedSlider.getValue();
+    }
+
+        /**
+     * 
+     * @return whether the mouse button is being pressed
+     */
+    public boolean getIsMouseBeingPressed() {
+        return isMouseBeingPressed;
+    }
+
+    /**
+     * Calculate the the row and column from where the mouse was clicked relative to
+     * the FieldView JPanel
+     * Restrict the row and column to fit the grid's width and height (handling out
+     * of bounds clicks)
+     * 
+     * x-coordinate / tile width == column
+     * y-cordinate / tile height == row
+     * 
+     * @return A location object of the row and column of the mouse click
+     */
+    public Location getMouseCoords() {
+        int x = mouseCoords[0];
+        int y = mouseCoords[1];
+
+        // calculate which column (gridx) and which row (gridy) the mouse click was at
+        int gridx = (int) (x / fieldView.getViewScalingFactor());
+        int gridy = (int) (y / fieldView.getViewScalingFactor());
+
+        // the column can be a maximum of gridWidth-1 index and the minimum it can be is
+        // 0
+        gridx = Math.max(Math.min(gridx, fieldView.gridWidth - 1), 0);
+
+        // the row can be a maximum of gridHeight-1 index and the minimum it can be is 0
+        gridy = Math.max(Math.min(gridy, fieldView.gridHeight - 1), 0);
+
+        return new Location(gridy, gridx);
     }
 
     /**

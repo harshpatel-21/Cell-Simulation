@@ -5,6 +5,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.HashMap;
 
+//TODO: discuss with i9trappy whether to set colours to static because creating new Heli cells doesn't carry over colour change initially.
+
 /**
  * A class representing the shared characteristics of all forms of life
  *
@@ -242,18 +244,14 @@ public abstract class Cell {
         Random rand = Randomizer.getRandom();
 
         // if the cell is not a Helicobacter
-        if (getSpecies() != Species.HELICOBACTER && (getSpecies() != Species.MYCOPLASMA && !isAlive())) {
+        if (getSpecies() != Species.HELICOBACTER ) {
             // get number of helicobacter neighbours
             int heliNum = getLivingNeighboursBySpecies(Species.HELICOBACTER).size();
 
             double engulfProbability = 0.135;
 
             if (getSpecies() == Species.INFECTED){
-                engulfProbability = 0.2;
-            }
-
-            if (getSpecies() == Species.EMPTYCELL){
-                engulfProbability = 0.009;
+                engulfProbability = 0.17;
             }
 
             // there is a probability that the cell is turned in to a Helicobacter if it is

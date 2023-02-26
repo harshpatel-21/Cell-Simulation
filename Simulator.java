@@ -99,24 +99,26 @@ public class Simulator {
      */
     public void simulate(int numGenerations) {
         view.toggleDebugComponents(true);
-        view.toggleCellAdding(true);
+
+        // initially, start off with blank canvas and allow species selection + drawing
+        view.toggleAllowUserToSelectSpecies(true);
 
         while (true) {
-            // checks if there is a living species on the field -> we don't want this to
-            // affect our simulation so not included in while loop condition
             view.isViable(field);
 
             // simulate while the simulator is not paused and the generation limit has not
             // been reached
             if (!view.getPause() && generation < numGenerations) {
+                // whilst simulation is being ran, don't allow modification of field
+                view.toggleAllowUserToSelectSpecies(false);
                 simOneGeneration();
                 // delay to control the speed of the simulation
                 delay((int) (350 * view.getDelayMultiplier()));
             }
 
-            // if the field wasn't reset with populated cells and the populate button hasn't
-            // been pressed, check for user input to add cells
-            if (!populatedWithCells && !view.getPopulateButtonPressed()) {
+            // if its paused and the field hasn't been reset with populated cells (still in
+            // drawing canvas mode)
+            else if (!populatedWithCells) {
 
                 // check to see if a user is adding cells onto the grid and add if possible.
                 if (view.getIsMouseBeingPressed()) {
@@ -126,24 +128,23 @@ public class Simulator {
                 }
 
                 // toggle the ability to draw cells depending on whether simulation is paused.
-                view.toggleCellAdding(view.getPause());
+                view.toggleAllowUserToSelectSpecies(view.getPause());
 
             }
 
             // if the populate button was pressed, reset the field with populated cells
             if (view.getPopulateButtonPressed()) {
-                populatedWithCells = true;
+                populatedWithCells = true; // since field is now populated with cells
                 resetToPopulatedField();
                 view.resetComponents();
-                // once grid is populated, don't allow user to change cells
-                view.toggleCellAdding(false);
+                view.toggleAllowUserToSelectSpecies(false); 
             }
 
-            // reset simulation to default
+            // reset simulation to default empty field
             if (view.getReset()) {
                 resetToEmptyField();
                 view.resetComponents();
-                populatedWithCells = false;
+                populatedWithCells = false; // since field is empty, its not populated with cells
             }
         }
     }
@@ -181,13 +182,20 @@ public class Simulator {
                 break;
 
             case INFECTED:
-                cellToAdd = new Helicobacter(field, location);
+                cellToAdd = new Mycoplasma(field, location);
                 cellToAdd.setSpecies(Species.INFECTED);
                 break;
         }
 
-        field.place(cellToAdd, location);
-        cells.add(cellToAdd);
+        // if a cell is to be removed, replace it with a dead cell in that position
+        if (cellToAdd == null) {
+            createDeadCell(location);
+        }
+        // else if a living cell is to be added:
+        else {
+            field.place(cellToAdd, location);
+            cells.add(cellToAdd);
+        }
 
         // update field
         view.showStatus(generation, field);
