@@ -15,10 +15,10 @@ import java.awt.Color;
 
 public class Simulator {
     // The default width for the grid.
-    private static final int DEFAULT_WIDTH = 140;
+    private static final int DEFAULT_WIDTH = 160;
 
     // The default depth of the grid.
-    private static final int DEFAULT_DEPTH = 110;
+    private static final int DEFAULT_DEPTH = 130;
 
     // The probability that a Mycoplasma is alive
     private static final double MYCOPLASMA_ALIVE_PROB = 0.2;
@@ -103,6 +103,8 @@ public class Simulator {
         // initially, start off with blank canvas and allow species selection + drawing
         view.toggleAllowUserToSelectSpecies(true);
 
+        // isViable ensures at least one cell is alive. We want it to start off with
+        // empty grid with all cells dead
         while (true) {
             view.isViable(field);
 
@@ -114,6 +116,7 @@ public class Simulator {
                 simOneGeneration();
                 // delay to control the speed of the simulation
                 delay((int) (350 * view.getDelayMultiplier()));
+                populatedWithCells = true;
             }
 
             // if its paused and the field hasn't been reset with populated cells (still in
@@ -137,7 +140,7 @@ public class Simulator {
                 populatedWithCells = true; // since field is now populated with cells
                 resetToPopulatedField();
                 view.resetComponents();
-                view.toggleAllowUserToSelectSpecies(false); 
+                view.toggleAllowUserToSelectSpecies(false);
             }
 
             // reset simulation to default empty field
@@ -156,45 +159,43 @@ public class Simulator {
      */
     public void addCellIfPossible(Location location) {
         Species speciesSelected = view.getSpeciesSelected();
-        Cell cellToAdd = null;
 
         // dont continue if no species was selected
         if (speciesSelected == null) {
             return;
         }
 
+        Cell cellToAdd = field.getObjectAt(location);
+
         // create the appropriate cell depending on the selected species
         switch (speciesSelected) {
+
             case HELICOBACTER:
-                cellToAdd = new Helicobacter(field, location);
+                // cellToAdd = new Helicobacter(field, location);
+                cellToAdd.setSpecies(Species.HELICOBACTER);
+
                 break;
 
             case MYCOPLASMA:
-                cellToAdd = new Mycoplasma(field, location);
+                // cellToAdd = new Mycoplasma(field, location);
+                cellToAdd.setSpecies(Species.MYCOPLASMA);
                 break;
 
             case ISSERIA:
-                cellToAdd = new Isseria(field, location);
-                break;
-
-            case EMPTYCELL:
-                // will keep cellToAdd to null.
+                // cellToAdd = new Isseria(field, location);
+                cellToAdd.setSpecies(Species.ISSERIA);
                 break;
 
             case INFECTED:
-                cellToAdd = new Mycoplasma(field, location);
+                // cellToAdd = new Mycoplasma(field, location);
                 cellToAdd.setSpecies(Species.INFECTED);
                 break;
         }
 
-        // if a cell is to be removed, replace it with a dead cell in that position
-        if (cellToAdd == null) {
-            createDeadCell(location);
-        }
-        // else if a living cell is to be added:
-        else {
-            field.place(cellToAdd, location);
-            cells.add(cellToAdd);
+        if (speciesSelected == Species.EMPTYCELL) {
+            cellToAdd.setState(false);
+        } else {
+            cellToAdd.setState(true);
         }
 
         // update field

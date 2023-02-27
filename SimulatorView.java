@@ -421,7 +421,7 @@ public class SimulatorView extends JFrame implements ActionListener {
      * for your project if you like.
      */
     private class FieldView extends JPanel implements MouseMotionListener {
-        private final int GRID_VIEW_SCALING_FACTOR = 6;
+        private final int GRID_VIEW_SCALING_FACTOR = 8;
         private int gridWidth, gridHeight;
         private int xScale, yScale;
         Dimension size;

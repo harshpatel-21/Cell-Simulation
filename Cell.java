@@ -331,7 +331,7 @@ public abstract class Cell {
         g = (int) Math.max(g - (0.1 * generation), 126);
         b = 255;
 
-        // set the new Helicobacter's static color
+        // set the new Helicobacter's color
         heliColour = new Color(r, g, b);
         // Species.setColor(Species.HELICOBACTER, heliColor);
 
