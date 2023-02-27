@@ -250,9 +250,9 @@ public abstract class Cell {
 
             double engulfProbability = 0.135;
 
-            if (getSpecies() == Species.INFECTED){
-                engulfProbability = 0.17;
-            }
+            // if (getSpecies() == Species.INFECTED){
+            //     engulfProbability = 0.17;
+            // }
 
             // there is a probability that the cell is turned in to a Helicobacter if it is
             // surrounded by 1 to 3 (inclusive) Helicobacter cells
@@ -273,9 +273,9 @@ public abstract class Cell {
         // get all the infected neighbours
         List<Cell> infectedNeighbours = getLivingNeighboursBySpecies(Species.INFECTED);
 
-        // every generation, Helicobacter infection rate decreased by 0.1%
+        // every generation, Helicobacter infection rate decreased by 0.5%
         if (getSpecies() == Species.HELICOBACTER) {
-            infectRate *= 0.999;
+            infectRate *= 0.995;
         }
 
         // if the cell is not infected

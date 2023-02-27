@@ -2,8 +2,6 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
-// TODO: discuss with I9 trappy about static colours in species to allow coloured JPanel in GUI when selecting a Cell
-
 /**
  * A graphical view of the simulation grid. The view displays a rectangle for
  * each location. Colors for each type of life form can be defined using the
@@ -15,9 +13,6 @@ import javax.swing.*;
  */
 
 public class SimulatorView extends JFrame implements ActionListener {
-    private int[] mouseCoords = new int[2];
-    private boolean isMouseBeingPressed = false;
-
     // Colors used for empty locations.
     private static final Color EMPTY_COLOR = Color.white;
 
@@ -40,6 +35,7 @@ public class SimulatorView extends JFrame implements ActionListener {
     // A statistics object computing and storing simulation information
     private FieldStats stats;
 
+    // Bottom pane which holds debug components (Start/Reset, etc.)
     private JPanel debugPane;
 
     // components on the debugging pane
@@ -48,10 +44,8 @@ public class SimulatorView extends JFrame implements ActionListener {
     private JButton resetButton; // button to reset simulation
     private JButton populateButton;
 
-    // ComboBox which will allow the seleciton of species
-    Species[] speciesNames = Species.class.getEnumConstants();
+    // ComboBox which will allow the selection of species
     private JComboBox<Species> speciesSelector;
-    private Species speciesSelected;
 
     // simulation speed slider values
     private int sliderUpperBound = 100;
@@ -59,9 +53,11 @@ public class SimulatorView extends JFrame implements ActionListener {
     private int currentSliderValue;
 
     // keep track of state of simulation
-    private boolean paused;
-    private boolean reset;
-    private boolean populateButtonPressed;
+    private boolean paused, reset, populateButtonPressed;
+
+    // mouse info to allow for drawing
+    private int mouseX, mouseY;
+    private boolean isMouseBeingPressed = false;
 
     // container which whill store components in the running JFrame
     private Container contents = getContentPane();
@@ -73,7 +69,7 @@ public class SimulatorView extends JFrame implements ActionListener {
      * @param height The simulation's height.
      * @param width  The simulation's width.
      */
-    public SimulatorView(int height, int width, Simulator simulator) {
+    public SimulatorView(int height, int width) {
         stats = new FieldStats();
 
         setTitle("Life Simulation");
@@ -129,8 +125,8 @@ public class SimulatorView extends JFrame implements ActionListener {
 
         // create the species selector and add it next to instruction label
         bottomConstraints.gridx = 1;
-        speciesSelector = new JComboBox<Species>(speciesNames);
-        speciesSelected = (Species) speciesSelector.getSelectedItem();
+        speciesSelector = new JComboBox<Species>(Species.class.getEnumConstants());
+
         // disable species selection by default (to only be interactable when simulate
         // is called)
         speciesSelector.setEnabled(false);
@@ -152,21 +148,21 @@ public class SimulatorView extends JFrame implements ActionListener {
      * Enable/Disable the species selector whilst appropriately changing the
      * instruction label
      * 
-     * @param val
+     * @param isAllowed boolean of if user is allowed to draw
      */
-    public void toggleAllowUserToSelectSpecies(boolean val) {
-        if (val) {
+    public void toggleAllowUserToSelectSpecies(boolean isAllowed) {
+        if (isAllowed) {
             instructionLabel.setText("You can click (and drag) the mouse to add cells on the grid!");
         } else {
             instructionLabel.setText("You cannot draw during a simulation or on a pre-populated field");
         }
 
         // set the status of the selector depending on if @param val is true or false
-        speciesSelector.setEnabled(val);
+        speciesSelector.setEnabled(isAllowed);
     }
 
     /**
-     * toggle state of components set them as interactable or not.
+     * Toggle state of components set them as interactable or not
      */
     public void toggleDebugComponents(boolean val) {
         speedSlider.setEnabled(val);
@@ -239,7 +235,7 @@ public class SimulatorView extends JFrame implements ActionListener {
     }
 
     /**
-     * Reset state of certain components to the defaults.
+     * Reset state of certain components to the defaults
      */
     public void resetComponents() {
         paused = true;
@@ -253,7 +249,6 @@ public class SimulatorView extends JFrame implements ActionListener {
         speedSlider.setValue(currentSliderValue);
 
         speciesSelector.setSelectedIndex(0);
-
     }
 
     /**
@@ -271,27 +266,21 @@ public class SimulatorView extends JFrame implements ActionListener {
             } else {
                 pauseButton.setText("Pause");
             }
-        } 
-        else if (event.getSource() == resetButton) {
+        } else if (event.getSource() == resetButton) {
             reset = true;
 
-        } 
-        else if (event.getSource() == speciesSelector) {
-            // convert
-            speciesSelected = (Species) speciesSelector.getSelectedItem();
-        } 
-        else if (event.getSource() == populateButton) {
+        } else if (event.getSource() == populateButton) {
             populateButtonPressed = true;
             populateButton.setEnabled(false);
         }
     }
 
     /**
-     * 
      * @return the species selected in the species selector JComboBox
      */
     public Species getSpeciesSelected() {
-        return speciesSelected;
+        // getSelectedItem returns generic object, so casting needed
+        return (Species) speciesSelector.getSelectedItem();
     }
 
     /**
@@ -311,8 +300,9 @@ public class SimulatorView extends JFrame implements ActionListener {
     /**
      * @return the percentage of how far along the slider is
      */
-    public double getDelayMultiplier() {
-        return ((double) currentSliderValue / (double) sliderUpperBound);
+    public float getDelayMultiplier() {
+        // casting to increase accuracy (otherwise it becomes an integer)
+        return (float) currentSliderValue / sliderUpperBound;
     }
 
     /**
@@ -324,14 +314,13 @@ public class SimulatorView extends JFrame implements ActionListener {
     }
 
     /**
-     * check for new slider value constantly to allow a change in simulation speed
-     * in real-time
+     * Update the currentSliderValue field with the value of the slider
      */
     public void updateSliderValue() {
         currentSliderValue = speedSlider.getValue();
     }
 
-        /**
+    /**
      * 
      * @return whether the mouse button is being pressed
      */
@@ -340,29 +329,18 @@ public class SimulatorView extends JFrame implements ActionListener {
     }
 
     /**
-     * Calculate the the row and column from where the mouse was clicked relative to
-     * the FieldView JPanel
-     * Restrict the row and column to fit the grid's width and height (handling out
-     * of bounds clicks)
+     * Calculates the corresponding field Location that the mouse is at
      * 
-     * x-coordinate / tile width == column
-     * y-cordinate / tile height == row
-     * 
-     * @return A location object of the row and column of the mouse click
+     * @return Location at the row and column of the mouse click
      */
-    public Location getMouseCoords() {
-        int x = mouseCoords[0];
-        int y = mouseCoords[1];
+    public Location getMouseLocation() {
+        // x-coordinate / tile width == column
+        int gridx = (int) (mouseX / fieldView.getViewScalingFactor());
+        // y-cordinate / tile height == row
+        int gridy = (int) (mouseY / fieldView.getViewScalingFactor());
 
-        // calculate which column (gridx) and which row (gridy) the mouse click was at
-        int gridx = (int) (x / fieldView.getViewScalingFactor());
-        int gridy = (int) (y / fieldView.getViewScalingFactor());
-
-        // the column can be a maximum of gridWidth-1 index and the minimum it can be is
-        // 0
+        // restrict xy-coordinates to the JPanel size
         gridx = Math.max(Math.min(gridx, fieldView.gridWidth - 1), 0);
-
-        // the row can be a maximum of gridHeight-1 index and the minimum it can be is 0
         gridy = Math.max(Math.min(gridy, fieldView.gridHeight - 1), 0);
 
         return new Location(gridy, gridx);
@@ -375,8 +353,6 @@ public class SimulatorView extends JFrame implements ActionListener {
      * @param field      The field whose status is to be displayed.
      */
     public void showStatus(int generation, Field field) {
-        updateSliderValue();
-
         if (!isVisible()) {
             setVisible(true);
         }
@@ -384,6 +360,8 @@ public class SimulatorView extends JFrame implements ActionListener {
         genLabel.setText(GENERATION_PREFIX + generation);
         stats.reset();
         fieldView.preparePaint();
+
+        updateSliderValue();
 
         for (int row = 0; row < field.getDepth(); row++) {
             for (int col = 0; col < field.getWidth(); col++) {
@@ -421,7 +399,7 @@ public class SimulatorView extends JFrame implements ActionListener {
      * for your project if you like.
      */
     private class FieldView extends JPanel implements MouseMotionListener {
-        private final int GRID_VIEW_SCALING_FACTOR = 8;
+        private final int GRID_VIEW_SCALING_FACTOR = 6;
         private int gridWidth, gridHeight;
         private int xScale, yScale;
         Dimension size;
@@ -437,18 +415,19 @@ public class SimulatorView extends JFrame implements ActionListener {
         }
 
         /*
-         * update the mouse coords
+         * Update the mouse coordinates
          */
         public void updateMouseCoords(MouseEvent e) {
-            mouseCoords[0] = e.getX();
-            mouseCoords[1] = e.getY();
+            mouseX = e.getX();
+            mouseY = e.getY();
         }
 
         /**
-         * Dont do anything if the mouse is moving without being pressed
+         * Updates the location of the mouse when it is moved
          */
         @Override
         public void mouseMoved(MouseEvent event) {
+            updateMouseCoords(event);
         }
 
         /**
@@ -457,7 +436,6 @@ public class SimulatorView extends JFrame implements ActionListener {
          */
         @Override
         public void mouseDragged(MouseEvent event) {
-            // Handle mouse dragging events if needed
             isMouseBeingPressed = true;
             updateMouseCoords(event);
         }

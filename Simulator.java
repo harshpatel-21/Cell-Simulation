@@ -76,10 +76,10 @@ public class Simulator {
         field = new Field(depth, width);
 
         // Create a view of the state of each location in the field.
-        view = new SimulatorView(depth, width, this);
+        view = new SimulatorView(depth, width);
 
         // Setup a valid starting point.
-        resetToEmptyField();
+        reset(false);
     }
 
     /**
@@ -100,11 +100,11 @@ public class Simulator {
     public void simulate(int numGenerations) {
         view.toggleDebugComponents(true);
 
-        // initially, start off with blank canvas and allow species selection + drawing
+        // initially, start off with blank canvas and allow user to draw
         view.toggleAllowUserToSelectSpecies(true);
 
-        // isViable ensures at least one cell is alive. We want it to start off with
-        // empty grid with all cells dead
+        // while true used to ensure simulation GUI persists even when board is empty
+        // (as it is in start state), instead of closing when 0 alive cells
         while (true) {
             view.isViable(field);
 
@@ -113,21 +113,20 @@ public class Simulator {
             if (!view.getPause() && generation < numGenerations) {
                 // whilst simulation is being ran, don't allow modification of field
                 view.toggleAllowUserToSelectSpecies(false);
+
                 simOneGeneration();
+
                 // delay to control the speed of the simulation
                 delay((int) (350 * view.getDelayMultiplier()));
-                populatedWithCells = true;
             }
 
-            // if its paused and the field hasn't been reset with populated cells (still in
-            // drawing canvas mode)
+            // if in drawing canvas mode
             else if (!populatedWithCells) {
 
-                // check to see if a user is adding cells onto the grid and add if possible.
+                // check to see if a user is adding cells onto the grid and add if possible
                 if (view.getIsMouseBeingPressed()) {
                     view.toggleDebugComponents(true); // allow the bottom components to be interactable
-                    Location gridCoords = view.getMouseCoords();
-                    addCellIfPossible(gridCoords);
+                    drawCell(view.getMouseLocation());
                 }
 
                 // toggle the ability to draw cells depending on whether simulation is paused.
@@ -135,17 +134,17 @@ public class Simulator {
 
             }
 
-            // if the populate button was pressed, reset the field with populated cells
+            // if the populate button was pressed, reset the field with pre-populated cells
             if (view.getPopulateButtonPressed()) {
                 populatedWithCells = true; // since field is now populated with cells
-                resetToPopulatedField();
+                reset(true);
                 view.resetComponents();
                 view.toggleAllowUserToSelectSpecies(false);
             }
 
             // reset simulation to default empty field
             if (view.getReset()) {
-                resetToEmptyField();
+                reset(false);
                 view.resetComponents();
                 populatedWithCells = false; // since field is empty, its not populated with cells
             }
@@ -153,54 +152,44 @@ public class Simulator {
     }
 
     /**
-     * add a cell in a given location
+     * Draws a cell to the field at a given location
      * 
      * @param location
      */
-    public void addCellIfPossible(Location location) {
+    public void drawCell(Location location) {
         Species speciesSelected = view.getSpeciesSelected();
 
-        // dont continue if no species was selected
-        if (speciesSelected == null) {
-            return;
-        }
+        Cell cellToDraw = field.getObjectAt(location);
 
-        Cell cellToAdd = field.getObjectAt(location);
-
-        // create the appropriate cell depending on the selected species
+        // set location to selected species of cell
         switch (speciesSelected) {
 
             case HELICOBACTER:
-                // cellToAdd = new Helicobacter(field, location);
-                cellToAdd.setSpecies(Species.HELICOBACTER);
-
+                cellToDraw.setSpecies(Species.HELICOBACTER);
                 break;
 
             case MYCOPLASMA:
-                // cellToAdd = new Mycoplasma(field, location);
-                cellToAdd.setSpecies(Species.MYCOPLASMA);
+                cellToDraw.setSpecies(Species.MYCOPLASMA);
                 break;
 
             case ISSERIA:
-                // cellToAdd = new Isseria(field, location);
-                cellToAdd.setSpecies(Species.ISSERIA);
+                cellToDraw.setSpecies(Species.ISSERIA);
                 break;
 
             case INFECTED:
-                // cellToAdd = new Mycoplasma(field, location);
-                cellToAdd.setSpecies(Species.INFECTED);
+                cellToDraw.setSpecies(Species.INFECTED);
                 break;
         }
 
+        // an empty cell is just a dead cell
         if (speciesSelected == Species.EMPTYCELL) {
-            cellToAdd.setState(false);
+            cellToDraw.setState(false);
         } else {
-            cellToAdd.setState(true);
+            cellToDraw.setState(true);
         }
 
         // update field
         view.showStatus(generation, field);
-
     }
 
     /**
@@ -232,58 +221,38 @@ public class Simulator {
     }
 
     /**
-     * Reset the simulation with empty cells
+     * Reset the field to initial state.
+     * 
+     * @param prePopulate boolean determining whether field is pre-populated or
+     *                    empty when reset
      */
-    public void resetToEmptyField() {
+    public void reset(boolean prePopulate) {
         generation = 0;
 
         cells.clear();
-        populateWithDeadCells();
+        populate(prePopulate);
 
-        // Show the starting state in the view.
+        // Show the starting state in the view
         view.showStatus(generation, field);
     }
 
     /**
-     * reset the population
+     * Populates entire field with cells
+     * 
+     * @param prePopulate determines whether the field is pre-populated with living
+     *                    cells, or the board is cleared
      */
-    public void resetToPopulatedField() {
-        generation = 0;
-
-        cells.clear();
-        populateWithCells();
-
-        // Show the starting state in the view.
-        view.showStatus(generation, field);
-    }
-
-    /**
-     * Randomly populate the field live/dead life forms
-     */
-    private void populateWithCells() {
+    private void populate(boolean prePopulate) {
         field.clear();
         // iterates over each location in the field
         for (int row = 0; row < field.getDepth(); row++) {
             for (int col = 0; col < field.getWidth(); col++) {
                 Location location = new Location(row, col);
-                populateSingleLocation(location);
-            }
-        }
-    }
-
-    /**
-     * populate entire field with dead cells in their respective area
-     */
-    private void populateWithDeadCells() {
-        field.clear();
-        // iterates over each location in the field
-        for (int row = 0; row < field.getDepth(); row++) {
-            for (int col = 0; col < field.getWidth(); col++) {
-                Location location = new Location(row, col);
-                createDeadCell(location);
-                // field.place(null, location)
-                // TODO: DISCUSS WITH I9 TRAPPY WHETHER TO KEEP THIS OR DO NULL TO AVOID OBJECT
-                // REPLACEMENT
+                if (prePopulate) {
+                    populateSingleLocation(location);
+                } else {
+                    createDeadCell(location);
+                }
             }
         }
     }
