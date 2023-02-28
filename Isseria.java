@@ -19,13 +19,12 @@ public class Isseria extends Cell {
      * @param field    The field currently occupied.
      * @param location The location within the field.
      */
-    public Isseria(Field field, Location location, Color col) {
-        super(field, location, col);
-        setInitialSpecies(Species.ISSERIA);
+    public Isseria(Field field, Location location, Color col, Species species) {
+        super(field, location, col, species);
     }
 
     public Isseria(Field field, Location location) {
-        this(field, location, Color.MAGENTA);
+        super(field, location, Color.MAGENTA, Species.ISSERIA);
     }
 
     /**

@@ -18,13 +18,12 @@ public class Helicobacter extends Cell {
      * @param field    The field currently occupied.
      * @param location The location within the field.
      */
-    public Helicobacter(Field field, Location location, Color col) {
-        super(field, location, col);
-        setInitialSpecies(Species.HELICOBACTER);
+    public Helicobacter(Field field, Location location, Color col, Species species) {
+        super(field, location, col, species);
     }
 
     public Helicobacter(Field field, Location location) {
-        this(field, location, new Color(200, 255, 255));
+        super(field, location, new Color(200, 255, 255), Species.HELICOBACTER);
     }
 
     /**

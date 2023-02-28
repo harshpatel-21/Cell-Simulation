@@ -145,7 +145,7 @@ public class SimulatorView extends JFrame implements ActionListener {
     }
 
     /**
-     * Enable/Disable the species selector whilst appropriately changing the
+     * Toggle the species selector whilst appropriately changing the
      * instruction label
      * 
      * @param isAllowed boolean of if user is allowed to draw
@@ -164,18 +164,18 @@ public class SimulatorView extends JFrame implements ActionListener {
     /**
      * Toggle state of components set them as interactable or not
      */
-    public void toggleDebugComponents(boolean val) {
-        speedSlider.setEnabled(val);
-        pauseButton.setEnabled(val);
-        resetButton.setEnabled(val);
-        populateButton.setEnabled(val);
+    public void toggleDebugComponents(boolean value) {
+        speedSlider.setEnabled(value);
+        pauseButton.setEnabled(value);
+        resetButton.setEnabled(value);
+        populateButton.setEnabled(value);
     }
 
     /**
-     * Creates the bottom pane which is responsible for toggling the simulation and
+     * Creates the debug pane which is responsible for toggling the simulation and
      * affecting its speed. The components are initially disabled.
      * 
-     * @return bottomPane a JPanel object containing all of the components
+     * @return debugPane a JPanel object containing all of the components
      */
     public JPanel createDebugPane() {
         // default values for the fields
@@ -240,6 +240,7 @@ public class SimulatorView extends JFrame implements ActionListener {
     public void resetComponents() {
         paused = true;
         reset = false;
+        
         populateButtonPressed = false;
         populateButton.setEnabled(true);
 

@@ -41,6 +41,7 @@ public class Simulator {
     // A graphical view of the simulation.
     private SimulatorView view;
 
+    // Flag to check if the simulator is empty or not.
     private boolean populatedWithCells;
 
     /**
@@ -237,7 +238,7 @@ public class Simulator {
     }
 
     /**
-     * Populates entire field with cells
+     * Populates entire field with cells.
      * 
      * @param prePopulate determines whether the field is pre-populated with living
      *                    cells, or the board is cleared
@@ -248,9 +249,12 @@ public class Simulator {
         for (int row = 0; row < field.getDepth(); row++) {
             for (int col = 0; col < field.getWidth(); col++) {
                 Location location = new Location(row, col);
+
+                // either field will be pre-populated with cells
                 if (prePopulate) {
                     populateSingleLocation(location);
                 } else {
+                    // or made empty, ready for the user to draw
                     createDeadCell(location);
                 }
             }

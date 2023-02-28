@@ -3,6 +3,5 @@ public class Main {
         Simulator simulator = new Simulator();
         simulator.runLongSimulation();
         // simulator.simulate(200);
-        // System.out.println((float) 5 / 2);
     }
 }
