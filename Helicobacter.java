@@ -4,10 +4,8 @@ import java.util.List;
 /**
  * Represents a distinct type of bacteria.
  * Fun Fact: The name comes from the Helicobacter pylori bacterium. The
- * bacterium
- * is the most widespread infection in the world, with at least half of the
- * world's
- * population being infected by it.
+ * bacterium is the most widespread infection in the world, with at least half
+ * of the world's population being infected by it.
  * 
  * @author Ishab Ahmed, Harshraj Patel
  * @version 2023.02.07

@@ -83,7 +83,8 @@ public class SimulatorView extends JFrame implements ActionListener {
         int screenHeight = (int) size.getHeight();
         int tileSize = fieldView.getViewScalingFactor();
         // centre the window
-        setLocation((int) (0.5 * (screenWidth - (width * tileSize))), (int) (0.5 * (screenHeight - (height * tileSize))));
+        setLocation((int) (0.5 * (screenWidth - (width * tileSize))),
+                (int) (0.5 * (screenHeight - (height * tileSize))));
 
         this.setMinimumSize(new Dimension(840, 800));
 
