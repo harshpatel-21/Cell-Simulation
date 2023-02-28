@@ -48,8 +48,7 @@ public class Mycoplasma extends Cell {
                 // as generations increase, the probability decreases to a minimum of 7%.
                 if (getSpecies() == Species.INFECTED && rand.nextDouble() < Math.max(10 / generation, 0.09)) {
                     setNextState(true);
-                } 
-                else
+                } else
                     // otherwise cell dies
                     setNextState(false);
             }
@@ -72,18 +71,19 @@ public class Mycoplasma extends Cell {
         // get all the living neighbours that are Isseria type
         List<Cell> isseNeighbours = getLivingNeighboursBySpecies(Species.ISSERIA);
 
-        // if there is more than one Mycoplasma neighbour AND more than one Isseria
-        // neighbour
-        if (mycoNeighbours.size() >= 1 && isseNeighbours.size() >= 1) {
-            // probability that the cells becomes infected
-            if (rand.nextDouble() < 0.9) {
-                setNextSpecies(Species.INFECTED);
-            } 
-            else {
-                // otherwise, make cell Isseria
-                setNextSpecies(Species.ISSERIA);
+        // if a dead cell is surrounded by more than one Mycoplasma neighbour AND more
+        // than one Isseria neighbour, attempt to breed
+        if (!isAlive()) {
+            if (mycoNeighbours.size() >= 1 && isseNeighbours.size() >= 1) {
+                // probability that the cells becomes infected
+                if (rand.nextDouble() < 0.9) {
+                    setNextSpecies(Species.INFECTED);
+                } else {
+                    // otherwise, make cell Isseria
+                    setNextSpecies(Species.ISSERIA);
+                }
+                setNextState(true);
             }
-            setNextState(true);
         }
     }
 
