@@ -67,14 +67,14 @@ public class Mycoplasma extends Cell {
     public void breedIfPossible() {
         Random rand = new Random();
 
-        // get all the living neighbours of the same colour
-        List<Cell> sameNeighbours = getLivingNeighboursBySpecies(getSpecies());
+        // get all the living neighbours that are Mycoplasma type
+        List<Cell> mycoNeighbours = getLivingNeighboursBySpecies(Species.MYCOPLASMA);
         // get all the living neighbours that are Isseria type
         List<Cell> isseNeighbours = getLivingNeighboursBySpecies(Species.ISSERIA);
 
         // if there is more than one Mycoplasma neighbour AND more than one Isseria
         // neighbour
-        if (sameNeighbours.size() >= 1 && isseNeighbours.size() >= 1) {
+        if (mycoNeighbours.size() >= 1 && isseNeighbours.size() >= 1) {
             // probability that the cells becomes infected
             if (rand.nextDouble() < 0.9) {
                 setNextSpecies(Species.INFECTED);

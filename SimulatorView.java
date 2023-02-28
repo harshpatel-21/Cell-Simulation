@@ -36,11 +36,11 @@ public class SimulatorView extends JFrame implements ActionListener {
     private FieldStats stats;
 
     // Bottom pane which holds debug components (Start/Reset, etc.)
-    private JPanel debugPane;
+    private JPanel controlPane;
 
     // components on the debugging pane
     private JSlider speedSlider; // changes how fast the simulation run
-    private JButton pauseButton; // button to pause/resume simulation
+    private JButton toggleSimButton; // button to pause/resume simulation
     private JButton resetButton; // button to reset simulation
     private JButton populateButton;
 
@@ -71,25 +71,27 @@ public class SimulatorView extends JFrame implements ActionListener {
      */
     public SimulatorView(int height, int width) {
         stats = new FieldStats();
+        fieldView = new FieldView(height, width);
 
         setTitle("Life Simulation");
         genLabel = new JLabel(GENERATION_PREFIX, JLabel.CENTER);
         infoLabel = new JLabel(" ", JLabel.CENTER);
         population = new JLabel(POPULATION_PREFIX, JLabel.CENTER);
 
-        // centre the window
         Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
-        int screen_width = (int) size.getWidth();
-        int screen_height = (int) size.getHeight();
-        setLocation((int) (screen_width * 0.5 - (width * 3)), (int) (screen_height * 0.5 - (height * 3)));
+        int screenWidth = (int) size.getWidth();
+        int screenHeight = (int) size.getHeight();
+        int tileSize = fieldView.getViewScalingFactor();
+        // centre the window
+        setLocation((int) (0.5 * (screenWidth - (width * tileSize))), (int) (0.5 * (screenHeight - (height * tileSize))));
 
-        fieldView = new FieldView(height, width);
+        this.setMinimumSize(new Dimension(840, 800));
 
         JPanel infoPane = new JPanel(new BorderLayout());
         infoPane.add(genLabel, BorderLayout.WEST);
         infoPane.add(infoLabel, BorderLayout.CENTER);
 
-        debugPane = createDebugPane();
+        controlPane = createControlPane();
         // disable all debug components (to only be interactable when simulate() is
         // called)
         toggleDebugComponents(false);
@@ -109,7 +111,7 @@ public class SimulatorView extends JFrame implements ActionListener {
         contents.add(population, mainConstraints);
 
         mainConstraints.gridy = 3;
-        contents.add(debugPane, mainConstraints);
+        contents.add(controlPane, mainConstraints);
 
         // Add instruction Label and Species selector box
         JPanel bottomPane = new JPanel(new GridBagLayout());
@@ -166,7 +168,7 @@ public class SimulatorView extends JFrame implements ActionListener {
      */
     public void toggleDebugComponents(boolean value) {
         speedSlider.setEnabled(value);
-        pauseButton.setEnabled(value);
+        toggleSimButton.setEnabled(value);
         resetButton.setEnabled(value);
         populateButton.setEnabled(value);
     }
@@ -175,17 +177,17 @@ public class SimulatorView extends JFrame implements ActionListener {
      * Creates the debug pane which is responsible for toggling the simulation and
      * affecting its speed. The components are initially disabled.
      * 
-     * @return debugPane a JPanel object containing all of the components
+     * @return controlPane a JPanel object containing all of the components
      */
-    public JPanel createDebugPane() {
+    public JPanel createControlPane() {
         // default values for the fields
         currentSliderValue = defaultSliderValue;
         paused = true;
         reset = false;
 
         // pane to hold components
-        JPanel debugPane = new JPanel();
-        debugPane.setLayout(new GridBagLayout()); // using the GridBagLayout
+        JPanel controlPane = new JPanel();
+        controlPane.setLayout(new GridBagLayout()); // using the GridBagLayout
 
         // create all the buttons and the speed selection slider
         speedSlider = new JSlider(0, sliderUpperBound, currentSliderValue);
@@ -194,7 +196,7 @@ public class SimulatorView extends JFrame implements ActionListener {
         speedSlider.setPaintTicks(true);
         speedSlider.setInverted(true); // invert the scale. eg from 0-100 to 100-0
 
-        pauseButton = new JButton("Start");
+        toggleSimButton = new JButton("Start");
         resetButton = new JButton("Reset");
         populateButton = new JButton("Populate field");
 
@@ -215,23 +217,23 @@ public class SimulatorView extends JFrame implements ActionListener {
         speedPane.add(speedSlider, speedConstraints);
 
         // add components to main pane horizontally
-        debugPane.add(speedPane, gridConstraints);
+        controlPane.add(speedPane, gridConstraints);
 
         gridConstraints.gridx = 1;
-        debugPane.add(pauseButton, gridConstraints);
+        controlPane.add(toggleSimButton, gridConstraints);
 
         gridConstraints.gridx = 2;
-        debugPane.add(resetButton, gridConstraints);
+        controlPane.add(resetButton, gridConstraints);
 
         gridConstraints.gridx = 3;
-        debugPane.add(populateButton, gridConstraints);
+        controlPane.add(populateButton, gridConstraints);
 
         // add listeners for when the buttons are clicked
-        pauseButton.addActionListener(this);
+        toggleSimButton.addActionListener(this);
         resetButton.addActionListener(this);
         populateButton.addActionListener(this);
 
-        return debugPane;
+        return controlPane;
     }
 
     /**
@@ -240,11 +242,11 @@ public class SimulatorView extends JFrame implements ActionListener {
     public void resetComponents() {
         paused = true;
         reset = false;
-        
+
         populateButtonPressed = false;
         populateButton.setEnabled(true);
 
-        pauseButton.setText("Start");
+        toggleSimButton.setText("Start");
 
         currentSliderValue = defaultSliderValue;
         speedSlider.setValue(currentSliderValue);
@@ -259,13 +261,13 @@ public class SimulatorView extends JFrame implements ActionListener {
      */
     @Override
     public void actionPerformed(ActionEvent event) {
-        if (event.getSource() == pauseButton) {
+        if (event.getSource() == toggleSimButton) {
             paused = !paused; // toggle pause state
             // display appropriate text depending on pause state
             if (paused) {
-                pauseButton.setText("Resume");
+                toggleSimButton.setText("Resume");
             } else {
-                pauseButton.setText("Pause");
+                toggleSimButton.setText("Pause");
             }
         } else if (event.getSource() == resetButton) {
             reset = true;

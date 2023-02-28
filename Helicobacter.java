@@ -3,8 +3,10 @@ import java.util.List;
 
 /**
  * Represents a distinct type of bacteria.
- * Fun Fact: The name comes from the Helicobacter pylori bacterium. The bacterium 
- * is the most widespread infection in the world, with at least half of the world's
+ * Fun Fact: The name comes from the Helicobacter pylori bacterium. The
+ * bacterium
+ * is the most widespread infection in the world, with at least half of the
+ * world's
  * population being infected by it.
  * 
  * @author Ishab Ahmed, Harshraj Patel
@@ -34,20 +36,22 @@ public class Helicobacter extends Cell {
         // get all the living neighbours of the same colour
         List<Cell> sameNeighbours = getLivingNeighboursBySpecies(getSpecies());
 
-        // if the cell is dead, and has exactly 3 neighbours, dead cell is set alive
-        if (!isAlive() && sameNeighbours.size() == 3) {
-            setNextState(true);
-        }
-
-        // if exactly 1 helicobacter neighbour, cell dies
-        if (sameNeighbours.size() == 1) {
-            setNextState(false);
-            // if exactly 3 helicobacter neighbours, cell is set alive
-        } else if (sameNeighbours.size() == 3) {
-            setNextState(true);
-            // if more than 3 helicobacter neighbours, cell dies due to overcrowding
-        } else if (sameNeighbours.size() > 3) {
-            setNextState(false);
+        if (isAlive()) {
+            // if exactly 1 helicobacter neighbour, cell dies
+            if (sameNeighbours.size() == 1) {
+                setNextState(false);
+                // if exactly 3 helicobacter neighbours, cell is set alive
+            } else if (sameNeighbours.size() == 3) {
+                setNextState(true);
+                // if more than 3 helicobacter neighbours, cell dies due to overcrowding
+            } else if (sameNeighbours.size() > 3) {
+                setNextState(false);
+            }
+        } else {
+            // if the cell is dead, and has exactly 3 neighbours, dead cell is set alive
+            if (sameNeighbours.size() == 3) {
+                setNextState(true);
+            }
         }
     }
 }
